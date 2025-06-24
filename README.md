@@ -249,16 +249,14 @@ GitHub는 표준 마크다운 외에 개발자에게 유용한 몇 가지 확장
 
 (여기에 Colab 내용 작성)
 ![colab1](https://github.com/user-attachments/assets/13ad41ca-8f7c-40fe-b6d6-a47800bea3a9)
-<img width="246" alt="Screenshot 2025-06-24 at 10 45 03" src="https://github.com/user-attachments/assets/37f62aea-798a-4ac1-a0e0-8fb144b5a9de" />
-<img width="301" alt="Screenshot 2025-06-24 at 10 45 14" src="https://github.com/user-attachments/assets/2344ba13-f2fc-4d82-93f5-b56a7c7f0b9a" />
-<img width="293" alt="Screenshot 2025-06-24 at 10 45 24" src="https://github.com/user-attachments/assets/efbb15f8-0d9a-4003-898c-f98c90401663" />
-<img width="290" alt="Screenshot 2025-06-24 at 10 45 37" src="https://github.com/user-attachments/assets/adf26217-906d-4215-8dde-3fac6a967d90" />
-
-<img width="223" alt="Screenshot 2025-06-24 at 10 45 29" src="https://github.com/user-attachments/assets/82905dee-8ffb-463a-838a-465f74471da1" />
-
-<img width="276" alt="Screenshot 2025-06-24 at 10 45 43" src="https://github.com/user-attachments/assets/91835109-9fed-4aeb-9a12-e488bb864150" />
-<img width="219" alt="Screenshot 2025-06-24 at 10 45 48" src="https://github.com/user-attachments/assets/f9e7f2f5-d6e3-497e-883b-e80f5c23d714" />
-<img width="241" alt="Screenshot 2025-06-24 at 10 45 54" src="https://github.com/user-attachments/assets/0c95a212-c2de-47af-adf3-f43655610663" />
+<img width="300" alt="Screenshot 2025-06-24 at 10 45 03" src="https://github.com/user-attachments/assets/37f62aea-798a-4ac1-a0e0-8fb144b5a9de" />
+<img width="300" alt="Screenshot 2025-06-24 at 10 45 14" src="https://github.com/user-attachments/assets/2344ba13-f2fc-4d82-93f5-b56a7c7f0b9a" />
+<img width="300" alt="Screenshot 2025-06-24 at 10 45 24" src="https://github.com/user-attachments/assets/efbb15f8-0d9a-4003-898c-f98c90401663" />
+<img width="300" alt="Screenshot 2025-06-24 at 10 45 37" src="https://github.com/user-attachments/assets/adf26217-906d-4215-8dde-3fac6a967d90" />
+<img width="300" alt="Screenshot 2025-06-24 at 10 45 29" src="https://github.com/user-attachments/assets/82905dee-8ffb-463a-838a-465f74471da1" />
+<img width="300" alt="Screenshot 2025-06-24 at 10 45 43" src="https://github.com/user-attachments/assets/91835109-9fed-4aeb-9a12-e488bb864150" />
+<img width="300" alt="Screenshot 2025-06-24 at 10 45 48" src="https://github.com/user-attachments/assets/f9e7f2f5-d6e3-497e-883b-e80f5c23d714" />
+<img width="300" alt="Screenshot 2025-06-24 at 10 45 54" src="https://github.com/user-attachments/assets/0c95a212-c2de-47af-adf3-f43655610663" />
 
 ## 2. About Python3
 - [Python basic](./docs/python3.md)
