@@ -22,7 +22,7 @@ pip install matplotlib as plt
 #### 5.비밀번호 만들기 영어 대문자, 소문자, 숫자, 특수문자를 섞어 안전하게! 예시: Git1234!hub
 #### 6.사용자 이름(Username) 정하기 나만의 고유한 이름을 지어요 (다른 사람이 쓰고 있으면 불가)
 #### 예시: jetsunmom, sungsookjang66 등
-####영어, 숫자, 하이픈(-) 가능 (띄어쓰기 ❌)
+#### 영어, 숫자, 하이픈(-) 가능 (띄어쓰기 ❌)
 -----
 ✅ Repository 만들기 순서
 GitHub에 로그인 후 New Repository 클릭
