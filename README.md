@@ -8,10 +8,10 @@ sudo apt update
 pip install matplotlib as plt
 ```
 # 📘 AI 학습 정리
-## 1. About GitHub, Markdown, Colab
-#### GitHub 사용법
-#### Markdown 문법
-#### Colab 기초
+1. About GitHub, Markdown, Colab
+GitHub 사용법
+Markdown 문법
+Colab 기초
 # GitHub 사용법
 ## ✅ GitHub 계정 만드는 순서 (2025년 기준)
 #### 1.웹 브라우저 열기 크롬(Chrome), 엣지(Edge), 사파리(Safari) 중 편한 걸 사용하세요.
