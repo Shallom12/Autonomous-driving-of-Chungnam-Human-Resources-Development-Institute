@@ -265,6 +265,8 @@ GitHub는 표준 마크다운 외에 개발자에게 유용한 몇 가지 확장
 
 - [Machine Learning Basic](./ml_basic.md)
 - [모델 훈련 및 평가](./ml_test.md)
+- <img width="702" alt="Screenshot 2025-06-24 at 10 39 00" src="https://github.com/user-attachments/assets/347973e1-d7fe-407d-8d4f-8190260e8824" />
+
 
 ## 5. OpenCV
 
