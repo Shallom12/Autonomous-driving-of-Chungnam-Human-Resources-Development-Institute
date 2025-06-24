@@ -8,85 +8,47 @@ sudo apt update
 pip install matplotlib as plt
 ```
 # 📘 AI 학습 정리
-## 1. About GitHub, Markdown, Colab  
-  * [GitHub 사용법](https://www.google.com/search?q=%23github-%EC%82%AC%EC%9A%A9%EB%B2%95)
-  * [Markdown 문법](https://www.google.com/search?q=%23markdown-%EB%AC%B8%EB%B2%95)
-  * [Colab 기초](https://www.google.com/search?q=%23colab-%EA%B8%B0%EC%B4%88)
 
-# GitHub 사용법
-## ✅ GitHub 계정 만드는 순서 (2025년 기준)
-#### 1.웹 브라우저 열기 크롬(Chrome), 엣지(Edge), 사파리(Safari) 중 편한 걸 사용하세요.
-#### 2.GitHub 웹사이트 접속 주소창에 아래 주소를 입력하고 Enter 누르세요: [https://github.com](https://github.com)
-#### 3.회원가입 시작하기 화면 오른쪽 위 또는 중간에 있는 Sign up 버튼 클릭
-#### 4.이메일 주소 입력 평소 자주 사용하는 이메일을 입력
-#### 5.비밀번호 만들기 영어 대문자, 소문자, 숫자, 특수문자를 섞어 안전하게! 예시: Git1234!hub
-#### 6.사용자 이름(Username) 정하기 나만의 고유한 이름을 지어요 (다른 사람이 쓰고 있으면 불가)
-#### 예시: jetsunmom, sungsookjang66 등
-#### 영어, 숫자, 하이픈(-) 가능 (띄어쓰기 ❌)
------
-✅ Repository 만들기 순서
-GitHub에 로그인 후 New Repository 클릭
+## 1. About GitHub, Markdown, Colab
+- [GitHub 사용법](#github-사용법)
 
-<img width="293" alt="Screenshot 2025-06-24 at 09 25 05" src="https://github.com/user-attachments/assets/1b3a5203-bbb2-447e-b842-1e8090b9a759" />
------
 
-### 2\. About Python3
+## GitHub 사용법
 
-  * [Python basic](https://www.google.com/search?q=%23python-basic)
+### ✅ GitHub 계정 만드는 순서 (2025년 기준)
 
-### 3\. Data structure / data sciences
+1. **웹 브라우저 열기**
+   크롬(Chrome), 엣지(Edge), 사파리(Safari) 중 편한 걸 사용하세요.
 
-  * [데이터 구조 개요](https://www.google.com/search?q=%23%EB%8D%B0%EC%9D%B4%ED%84%B0-%EA%B5%AC%EC%A1%B0-%EA%B0%9C%EC%9A%94)
-  * [Pandas](https://www.google.com/search?q=%23pandas)
-  * [Numpy](https://www.google.com/search?q=%23numpy)
-  * [Matplotlib](https://www.google.com/search?q=%23matplotlib)
+2. **GitHub 웹사이트 접속**
+   주소창에 아래 주소를 입력하고 Enter 누르세요: https://github.com
 
-### 4\. Machine Learning
+3. **회원가입 시작하기**
+   화면 오른쪽 위 또는 중간에 있는 Sign up 버튼 클릭
 
-  * [Machine Learning Basic](https://www.google.com/search?q=%23machine-learning-basic)
-  * [모델 훈련 및 평가](https://www.google.com/search?q=%23%EB%AA%A8%EB%8D%B8-%ED%9B%88%EB%A0%A8-%EB%B0%8F-%ED%8F%89%EA%B0%80)
+4. **이메일 주소 입력**
+   평소 자주 사용하는 이메일을 입력
 
-### 5\. OpenCV
+5. **비밀번호 만들기**
+   영어 대문자, 소문자, 숫자, 특수문자를 섞어 안전하게!
+   예시: Git1234!hub
 
-  * [OpenCV Basic](https://www.google.com/search?q=%23opencv-basic)
-  * [이미지 처리](https://www.google.com/search?q=%23%EC%9D%B4%EB%AF%B8%EC%A7%80-%EC%B2%98%EB%A6%AC)
+6. **사용자 이름(Username) 정하기**
+   나만의 고유한 이름을 지어요 (다른 사람이 쓰고 있으면 불가)
+   - 예시: jetsunmom, sungsookjang66 등
+   - 영어, 숫자, 하이픈(-) 가능 (띄어쓰기 ❌)
 
-### 6\. CNN(Convolution Neural Network)
+### ✅ Repository 만들기 순서
 
-  * [CNN\_Basic](https://www.google.com/search?q=%23cnn_basic)
-  * [CNN\_자율주행 관련 코드](https://www.google.com/search?q=%23cnn_%EC%9E%90%EC%9C%A8%EC%A3%BC%ED%96%89-%EA%B4%80%EB%A0%A8-%EC%BD%94%EB%93%9C)
+1. **GitHub에 로그인 후 New Repository 클릭**
+2. ![new](https://github.com/user-attachments/assets/3481a680-f677-403b-be8c-1fe59d5aa7cb)
 
-### 7\. Ultralytics
-
-  * [Ultralytics\_Basic](https://www.google.com/search?q=%23ultralytics_basic)
-  * [YOLOv8](https://www.google.com/search?q=%23yolov8)
-  * [YOLOv12](https://www.google.com/search?q=%23yolov12)
-
-### 8\. TensorRT vs PyTorch
-
-  * [PyTorch\_Basic](https://www.google.com/search?q=%23pytorch_basic)
-  * [TensorRT](https://www.google.com/search?q=%23tensorrt)
-  * [YOLOv12](https://www.google.com/search?q=%23yolov12)
-
-### 9\. TAO Toolkit on RunPod
-
-  * [TAO\_사용법](https://www.google.com/search?q=%23tao_%EC%82%AC%EC%9A%A9%EB%B2%95)
-  * [TAO\_Toolkit](https://www.google.com/search?q=%23tao_toolkit)
-
-### 10\. 칼만필터, CARLA, 경로 알고리즘
-
-  * [kalman](https://www.google.com/search?q=%23kalman)
-  * [CARLA\_simulator](https://www.google.com/search?q=%23carla_simulator)
-
-### 11\. ADAS & (ADAS TensorRT vs PyTorch)
-
-  * [adas\_basic](https://www.google.com/search?q=%23adas_basic)
-  * [TensorRT vs PyTorch 비교](https://www.google.com/search?q=%23tensorrt-vs-pytorch-%EB%B9%84%EA%B5%90)
-
------
-네, 요청하신 대로 가독성이 좋고 GitHub에 바로 적용하기 좋은 형태로 마크다운 가이드를 정리해드리겠습니다. 앞서 제공해드린 내용을 바탕으로, 구조와 디자인을 더 깔끔하게 다듬었습니다.
-
------
+3. **Repository 이름 입력**
+4. **Public/Private 선택**
+5. **README.md 파일 생성 체크**
+6. **Create repository 버튼 클릭**
+   
+![create_repository](https://github.com/user-attachments/assets/8c2eb16b-8dfc-465a-88cd-d35770d12df0)-----
 
 # GitHub 마크다운 가이드: 초보자를 위한 시작 (2025년 최신)
 
@@ -280,3 +242,59 @@ GitHub는 표준 마크다운 외에 개발자에게 유용한 몇 가지 확장
   * **Markdown Guide:** [https://www.markdownguide.org/basic-syntax/](https://www.markdownguide.org/basic-syntax/)
 
 -----
+
+- [Colab 기초](#colab-기초)
+
+## Colab 기초    
+
+(여기에 Colab 내용 작성)
+![colab1](https://github.com/user-attachments/assets/13ad41ca-8f7c-40fe-b6d6-a47800bea3a9)
+
+
+## 2. About Python3
+- [Python basic](./docs/python3.md)
+
+## 3.  data structure / data sciencs
+
+- [데이터 구조 개요](./data_structures.md)
+- [Pandas](./pandas.md)
+- [Numpy](./numpy.md)
+- [Matplotlib](./Matplotlib.md)
+
+## 4. Machine Learning
+
+- [Machine Learning Basic](./ml_basic.md)
+- [모델 훈련 및 평가](./ml_test.md)
+
+## 5. OpenCV
+
+- [OpenCV Basic](./OpenCV_basic.md)
+- [이미지 처리](./image_test.md)
+
+  
+## 6. CNN(Convolution Neural Network
+- [CNN_Basic](./CNN_basic.md)
+- [CNN_자율주행 관련 코드](./cnn_test.md)
+
+## 7. Ultralytics
+- [Ultralytics_Basic](./Ultralytics_basic.md)
+- [YOLOv8](./YOLOv8_test.md)
+- [YOLOv12](./YOLOv12_test.md)
+  
+## 8. TensorRT vs PyTorch 
+- [PyTorch_Basic](./PyTorch_basic.md)
+- [TensorRT](./TensorRT_test.md)
+- [YOLOv12](./YOLOv12_test.md)
+
+## 9. TAO Toolkit on RunPod
+- [TAO_사용법](.TAO_install.md)
+- [TAO_Toolkit](.TAO_Toolkit.md)
+
+## 10. 칼만필터, CARLA, 경로 알고리즘
+- [kalman](.kalman.md)
+- [CARLA_simulator](.CARLA.md)
+
+## 11. ADAS & (ADAS TensorRT vs PyTorch)
+- [adas_basic](.adas_basic.md)
+- [TensorRT vs PyTorch 비교](.vs.md)
+- 
