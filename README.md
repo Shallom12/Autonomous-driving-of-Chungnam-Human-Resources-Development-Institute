@@ -10,7 +10,7 @@ pip install matplotlib as plt
 # 📘 AI 학습 정리
 
 ## 1. About GitHub, Markdown, Colab
-- [GitHub 사용법](#github-사용법)
+- [GitHub 사용법](github-사용법)
 
 
 ## GitHub 사용법
