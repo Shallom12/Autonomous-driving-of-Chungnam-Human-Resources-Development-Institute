@@ -455,3 +455,634 @@ Google 문서처럼 여러 명이 동시에 Colab 노트북을 편집할 수 있
 - [adas_basic](.adas_basic.md)
 - [TensorRT vs PyTorch 비교](.vs.md)
 - 
+
+# 🚗 자율주행을 위한 파이썬 명령문 완벽 가이드
+
+> 자율주행 분야에서 자주 사용되는 파이썬 명령문들을 실제 예제와 함께 학습해보세요!
+
+## 📋 목차
+- [1. List Comprehension](#1-list-comprehension)
+- [2. Dictionary Comprehension](#2-dictionary-comprehension)
+- [3. 실전 과제 모음](#3-실전-과제-모음)
+
+---
+
+## 1. List Comprehension
+
+### 🎯 센서 데이터 필터링 - 안전 거리 이상의 장애물만 추출
+
+```python
+# 라이다 센서가 감지한 장애물까지의 거리 데이터 (단위: 미터)
+sensor_distances = [2.5, 8.3, 1.2, 15.7, 3.8, 0.9, 12.4, 6.1]
+
+# 5미터 이상 떨어진 '안전한' 장애물만 필터링
+safe_distances = [dist for dist in sensor_distances if dist > 5.0]
+
+print("안전 거리 이상 장애물:", safe_distances)
+```
+
+**실행 결과:**
+```
+안전 거리 이상 장애물: [8.3, 15.7, 12.4, 6.1]
+```
+
+**💡 해설:**
+- `2.5, 1.2, 3.8, 0.9`는 5미터 미만이므로 위험 구간으로 제외
+- `8.3, 15.7, 12.4, 6.1`은 안전 거리로 분류되어 포함
+
+---
+
+### 🧭 좌표 변환 - 상대 좌표를 절대 좌표로 변환
+
+```python
+# 차량의 현재 GPS 좌표 (절대 좌표)
+vehicle_position = (10, 20)
+
+# 차량 기준 상대 좌표로 감지된 주변 물체들
+relative_points = [(1, 2), (-3, 4), (5, -1), (0, 3)]
+
+# 상대 좌표를 지도상 절대 좌표로 변환
+absolute_points = [
+    (x + vehicle_position[0], y + vehicle_position[1])
+    for x, y in relative_points
+]
+
+print("절대 좌표:", absolute_points)
+```
+
+**실행 결과:**
+```
+절대 좌표: [(11, 22), (7, 24), (15, 19), (10, 23)]
+```
+
+**💡 해설:**
+- `(1, 2)` → `(11, 22)`: 차량 앞쪽 오른쪽 물체의 지도상 위치
+- `(-3, 4)` → `(7, 24)`: 차량 왼쪽 앞의 물체 위치
+- 센서 데이터를 내비게이션 시스템과 연동하기 위한 필수 변환
+
+---
+
+### 🚦 속도 제한 적용 - 각 구간별 최대 속도 제한
+
+```python
+# 현재 각 구간에서의 주행 속도 (km/h)
+current_speeds = [45, 75, 38, 82, 55, 95, 28]
+
+# 각 구간의 법정 속도 제한 (km/h)
+speed_limits = [50, 70, 40, 80, 60, 90, 30]
+
+# 현재 속도와 제한 속도 중 작은 값을 선택 (법규 준수)
+adjusted_speeds = [
+    min(current, limit)
+    for current, limit in zip(current_speeds, speed_limits)
+]
+
+print("속도 제한 적용 후:", adjusted_speeds)
+```
+
+**실행 결과:**
+```
+속도 제한 적용 후: [45, 70, 38, 80, 55, 90, 28]
+```
+
+**💡 해설:**
+- `75 → 70`: 70km/h 제한구간에서 감속 필요
+- `82 → 80`: 80km/h 제한구간에서 감속 필요
+- `95 → 90`: 90km/h 제한구간에서 감속 필요
+
+---
+
+### 🛣️ 경로 포인트 생성 - 시작점과 끝점 사이의 중간 포인트들 생성
+
+```python
+import math
+
+# 출발지와 목적지 좌표
+start_point = (0, 0)    # 집 주차장
+end_point = (10, 8)     # 회사 주차장
+num_points = 5          # 5개의 경유지 생성
+
+# 선형 보간을 이용한 균등 간격 경로 포인트 생성
+path_points = [
+    (
+        start_point[0] + i * (end_point[0] - start_point[0]) / (num_points - 1),
+        start_point[1] + i * (end_point[1] - start_point[1]) / (num_points - 1)
+    )
+    for i in range(num_points)
+]
+
+print("경로 포인트들:", path_points)
+```
+
+**실행 결과:**
+```
+경로 포인트들: [(0.0, 0.0), (2.5, 2.0), (5.0, 4.0), (7.5, 6.0), (10.0, 8.0)]
+```
+
+**💡 해설:**
+- 직선 거리를 5등분하여 부드러운 주행 경로 생성
+- 급격한 방향 전환 대신 단계적 이동으로 승차감 향상
+
+---
+
+### ⚠️ 위험 상황 감지 - 조건부 다중 필터링
+
+```python
+# 다양한 센서에서 수집된 데이터
+sensor_data = [
+    {'type': 'lidar', 'distance': 3.2, 'angle': 45},    # 라이다: 우측 45도, 3.2m
+    {'type': 'camera', 'distance': 8.5, 'angle': 0},    # 카메라: 정면, 8.5m
+    {'type': 'radar', 'distance': 1.8, 'angle': -30},   # 레이더: 좌측 30도, 1.8m
+    {'type': 'lidar', 'distance': 12.3, 'angle': 90}    # 라이다: 우측 90도, 12.3m
+]
+
+# 위험 조건: 5m 이내 + 전방 60도 범위 내
+danger_sensors = [
+    sensor for sensor in sensor_data
+    if sensor['distance'] < 5.0 and abs(sensor['angle']) < 60
+]
+
+print("위험 감지 센서:", danger_sensors)
+```
+
+**실행 결과:**
+```
+위험 감지 센서: [
+    {'type': 'lidar', 'distance': 3.2, 'angle': 45}, 
+    {'type': 'radar', 'distance': 1.8, 'angle': -30}
+]
+```
+
+**💡 해설:**
+- 전방 60도 범위 내에서 5미터 이내 장애물을 감지한 센서만 추출
+- 즉시 감속 또는 회피 기동이 필요한 위험 상황 판단
+
+---
+
+## 2. Dictionary Comprehension
+
+### 📊 기본 딕셔너리 생성 - 센서별 데이터 관리
+
+```python
+# 1. 센서 데이터 딕셔너리 생성
+sensor_data = {}
+sensor_data['camera'] = 8.5    # 카메라 센서: 8.5m
+sensor_data['lidar'] = 12.3    # 라이다 센서: 12.3m
+sensor_data['radar'] = 15.7    # 레이더 센서: 15.7m
+
+print("센서 데이터:", sensor_data)
+
+# 2. 경로 계획 - 목적지별 거리 정보
+destinations = ['집', '회사', '마트', '주유소']
+distances_km = [0, 15, 8, 12]
+
+route_plan = {}
+for i, dest in enumerate(destinations):
+    route_plan[dest] = distances_km[i]
+
+print("목적지별 거리:", route_plan)
+
+# 3. 차량 상태 체크
+vehicle_parts = ['엔진', '브레이크', '타이어', '배터리']
+status_codes = ['정상', '정상', '교체필요', '정상']
+
+vehicle_status = {}
+for i, part in enumerate(vehicle_parts):
+    vehicle_status[part] = status_codes[i]
+
+print("차량 상태:", vehicle_status)
+```
+
+**실행 결과:**
+```
+센서 데이터: {'camera': 8.5, 'lidar': 12.3, 'radar': 15.7}
+목적지별 거리: {'집': 0, '회사': 15, '마트': 8, '주유소': 12}
+차량 상태: {'엔진': '정상', '브레이크': '정상', '타이어': '교체필요', '배터리': '정상'}
+```
+
+---
+
+### 🚥 신호등 정보 관리
+
+```python
+# 교차로별 신호등 현황
+intersections = ['서울역', '강남역', '홍대입구', '잠실역']
+light_colors = ['빨강', '초록', '노랑', '초록']
+remaining_times = [25, 15, 3, 45]
+
+# 신호등 정보 통합 관리
+traffic_lights = {}
+for i, intersection in enumerate(intersections):
+    traffic_lights[intersection] = {
+        'color': light_colors[i],
+        'time_left': remaining_times[i]
+    }
+
+print("교차로 신호등 현황:")
+for intersection, info in traffic_lights.items():
+    print(f"  {intersection}: {info['color']} (남은시간: {info['time_left']}초)")
+```
+
+**실행 결과:**
+```
+교차로 신호등 현황:
+  서울역: 빨강 (남은시간: 25초)
+  강남역: 초록 (남은시간: 15초)
+  홍대입구: 노랑 (남은시간: 3초)
+  잠실역: 초록 (남은시간: 45초)
+```
+
+---
+
+### 🅿️ 주차장 정보 시스템
+
+```python
+# 주차장 구역별 현황
+parking_zones = ['A구역', 'B구역', 'C구역', 'D구역']
+empty_spots = [5, 0, 12, 3]
+total_spots = [20, 15, 25, 10]
+
+# 주차장 정보 딕셔너리 생성
+parking_info = {}
+for i, zone in enumerate(parking_zones):
+    parking_info[zone] = {
+        'empty': empty_spots[i],
+        'total': total_spots[i],
+        'occupancy_rate': round((total_spots[i] - empty_spots[i]) / total_spots[i] * 100, 1)
+    }
+
+print("주차장 현황:")
+for zone, info in parking_info.items():
+    print(f"  {zone}: {info['empty']}/{info['total']} 가능 (점유율: {info['occupancy_rate']}%)")
+    
+# 빈 주차공간이 있는 구역 찾기
+available_zones = [zone for zone, info in parking_info.items() if info['empty'] > 0]
+print(f"\n주차 가능한 구역: {available_zones}")
+```
+
+**실행 결과:**
+```
+주차장 현황:
+  A구역: 5/20 가능 (점유율: 75.0%)
+  B구역: 0/15 가능 (점유율: 100.0%)
+  C구역: 12/25 가능 (점유율: 52.0%)
+  D구역: 3/10 가능 (점유율: 70.0%)
+
+주차 가능한 구역: ['A구역', 'C구역', 'D구역']
+```
+
+---
+
+## 3. 실전 과제 모음
+
+### 🚦 과제 1: 스마트 신호등 타이밍 최적화
+
+```python
+print("=== 스마트 신호등 타이밍 최적화 ===")
+
+# 교차로별 대기 차량 수와 신호등 현황
+intersections = ['서울역앞', '시청앞', '종로3가', '을지로입구']
+traffic_signals = {
+    '서울역앞': {'color': '빨강', 'time_left': 25, 'waiting': 12},
+    '시청앞': {'color': '초록', 'time_left': 15, 'waiting': 8},
+    '종로3가': {'color': '빨강', 'time_left': 40, 'waiting': 15},
+    '을지로입구': {'color': '노랑', 'time_left': 3, 'waiting': 5}
+}
+
+print("현재 교차로 상황:")
+for intersection in intersections:
+    signal = traffic_signals[intersection]
+    status_emoji = "🔴" if signal['color'] == '빨강' else "🟢" if signal['color'] == '초록' else "🟡"
+    print(f"  {status_emoji} {intersection}: {signal['color']} {signal['time_left']}초, 대기차량 {signal['waiting']}대")
+
+# 우선순위 교차로 선정 (대기차량 10대 이상)
+print("\n⚠️  우선처리 필요 교차로:")
+priority_intersections = [
+    intersection for intersection in intersections
+    if traffic_signals[intersection]['waiting'] >= 10
+]
+
+for intersection in priority_intersections:
+    waiting = traffic_signals[intersection]['waiting']
+    print(f"  🚨 {intersection}: 대기차량 {waiting}대 → 신호 조정 필요")
+```
+
+**실행 결과:**
+```
+=== 스마트 신호등 타이밍 최적화 ===
+현재 교차로 상황:
+  🔴 서울역앞: 빨강 25초, 대기차량 12대
+  🟢 시청앞: 초록 15초, 대기차량 8대
+  🔴 종로3가: 빨강 40초, 대기차량 15대
+  🟡 을지로입구: 노랑 3초, 대기차량 5대
+
+⚠️  우선처리 필요 교차로:
+  🚨 서울역앞: 대기차량 12대 → 신호 조정 필요
+  🚨 종로3가: 대기차량 15대 → 신호 조정 필요
+```
+
+---
+
+### 🅿️ 과제 2: 자동 발렛파킹 시스템
+
+```python
+print("=== 자동 발렛파킹 시스템 ===")
+
+# 주차공간 크기별 현황
+parking_spaces = {
+    '소형전용': {'total': 30, 'occupied': 15, 'size_limit': '소형'},
+    '일반공간': {'total': 40, 'occupied': 28, 'size_limit': '중형'},
+    '대형공간': {'total': 15, 'occupied': 8, 'size_limit': '대형'},
+    'SUV전용': {'total': 20, 'occupied': 12, 'size_limit': 'SUV'}
+}
+
+print("주차공간 현황:")
+for space_type, space in parking_spaces.items():
+    available = space['total'] - space['occupied']
+    utilization = round(space['occupied'] / space['total'] * 100, 1)
+    print(f"  {space_type}: {available}/{space['total']} 가능 ({space['size_limit']} 전용, 이용률 {utilization}%)")
+
+# 신규 차량 주차 시뮬레이션
+new_vehicle = 'SUV'
+print(f"\n🚗 신규 {new_vehicle} 차량 주차 요청")
+
+# 적합한 주차공간 찾기
+suitable_spaces = []
+for space_type, space in parking_spaces.items():
+    available = space['total'] - space['occupied']
+    if space['size_limit'] == new_vehicle and available > 0:
+        suitable_spaces.append(space_type)
+
+if suitable_spaces:
+    selected_space = suitable_spaces[0]
+    available = parking_spaces[selected_space]['total'] - parking_spaces[selected_space]['occupied']
+    print(f"✅ {selected_space}에 주차 가능 (남은 자리: {available}개)")
+else:
+    print("❌ 적합한 주차공간이 없습니다")
+```
+
+**실행 결과:**
+```
+=== 자동 발렛파킹 시스템 ===
+주차공간 현황:
+  소형전용: 15/30 가능 (소형 전용, 이용률 50.0%)
+  일반공간: 12/40 가능 (중형 전용, 이용률 70.0%)
+  대형공간: 7/15 가능 (대형 전용, 이용률 53.3%)
+  SUV전용: 8/20 가능 (SUV 전용, 이용률 60.0%)
+
+🚗 신규 SUV 차량 주차 요청
+✅ SUV전용에 주차 가능 (남은 자리: 8개)
+```
+
+---
+
+### 🚛 과제 3: 차량 군집주행 관리 시스템
+
+```python
+print("=== 차량 군집주행 관리 시스템 ===")
+
+# 군집주행 그룹별 상세 정보
+convoy_info = {
+    '그룹A': {'vehicles': 3, 'leader_speed': 80, 'formation': '일렬'},
+    '그룹B': {'vehicles': 5, 'leader_speed': 70, 'formation': '삼각'},
+    '그룹C': {'vehicles': 2, 'leader_speed': 90, 'formation': '병렬'}
+}
+
+print("군집주행 현황:")
+for group, info in convoy_info.items():
+    formation_emoji = "🚗🚗🚗" if info['formation'] == '일렬' else "🚗🚗\n🚗" if info['formation'] == '삼각' else "🚗🚗"
+    print(f"  {group}: {info['vehicles']}대, 속도 {info['leader_speed']}km/h, {info['formation']}대형")
+
+# 안전 속도 권장 (5대 이상이면 속도 제한)
+print("\n📋 안전 권장사항:")
+for group, info in convoy_info.items():
+    if info['vehicles'] >= 5:
+        recommended_speed = 60
+        print(f"  ⚠️ {group}: 차량 {info['vehicles']}대로 인해 {recommended_speed}km/h 이하 권장")
+    else:
+        print(f"  ✅ {group}: 현재 속도 {info['leader_speed']}km/h 적정")
+
+# 군집 효율성 분석
+print("\n📊 군집 효율성 분석:")
+for group, info in convoy_info.items():
+    if info['vehicles'] >= 3:
+        fuel_efficiency = round(15 + (info['vehicles'] * 2), 1)  # 연비 개선 효과
+        print(f"  {group}: 연비 {fuel_efficiency}% 개선 효과")
+```
+
+**실행 결과:**
+```
+=== 차량 군집주행 관리 시스템 ===
+군집주행 현황:
+  그룹A: 3대, 속도 80km/h, 일렬대형
+  그룹B: 5대, 속도 70km/h, 삼각대형
+  그룹C: 2대, 속도 90km/h, 병렬대형
+
+📋 안전 권장사항:
+  ✅ 그룹A: 현재 속도 80km/h 적정
+  ⚠️ 그룹B: 차량 5대로 인해 60km/h 이하 권장
+  ✅ 그룹C: 현재 속도 90km/h 적정
+
+📊 군집 효율성 분석:
+  그룹A: 연비 21.0% 개선 효과
+  그룹B: 연비 25.0% 개선 효과
+```
+
+---
+
+### 🔋 과제 4: 전기차 충전 관리 시스템
+
+```python
+print("=== 전기차 충전 관리 시스템 ===")
+
+# 전기차 배터리 현황
+ev_fleet = ['전기차A', '전기차B', '전기차C', '전기차D', '전기차E']
+ev_status = {
+    '전기차A': {'battery': 85, 'range': 340, 'charging': False},
+    '전기차B': {'battery': 25, 'range': 100, 'charging': False},
+    '전기차C': {'battery': 60, 'range': 240, 'charging': True},
+    '전기차D': {'battery': 15, 'range': 60, 'charging': False},
+    '전기차E': {'battery': 90, 'range': 360, 'charging': False}
+}
+
+print("전기차 배터리 현황:")
+for vehicle, status in ev_status.items():
+    battery_emoji = "🔋" if status['battery'] > 50 else "🪫" if status['battery'] > 20 else "⚡"
+    charging_status = "충전중" if status['charging'] else "대기중"
+    print(f"  {battery_emoji} {vehicle}: {status['battery']}% ({status['range']}km) - {charging_status}")
+
+# 긴급 충전 필요 차량 (배터리 30% 이하)
+print("\n🚨 긴급 충전 필요:")
+urgent_vehicles = [
+    vehicle for vehicle, status in ev_status.items()
+    if status['battery'] <= 30 and not status['charging']
+]
+
+for vehicle in urgent_vehicles:
+    battery = ev_status[vehicle]['battery']
+    range_left = ev_status[vehicle]['range']
+    print(f"  ⚡ {vehicle}: {battery}% (주행가능 {range_left}km) - 즉시 충전 필요")
+
+# 충전소 예약 시스템
+charging_stations = {
+    '강남충전소': {'slots': 5, 'reserved': 2, 'fast_charge': True},
+    '서초충전소': {'slots': 3, 'reserved': 1, 'fast_charge': False},
+    '종로충전소': {'slots': 4, 'reserved': 4, 'fast_charge': True}
+}
+
+print("\n🔌 충전소 예약 현황:")
+for station, info in charging_stations.items():
+    available = info['slots'] - info['reserved']
+    charge_type = "급속충전" if info['fast_charge'] else "완속충전"
+    availability_emoji = "🟢" if available > 0 else "🔴"
+    print(f"  {availability_emoji} {station}: {available}/{info['slots']} 이용가능 ({charge_type})")
+```
+
+**실행 결과:**
+```
+=== 전기차 충전 관리 시스템 ===
+전기차 배터리 현황:
+  🔋 전기차A: 85% (340km) - 대기중
+  🪫 전기차B: 25% (100km) - 대기중
+  🔋 전기차C: 60% (240km) - 충전중
+  ⚡ 전기차D: 15% (60km) - 대기중
+  🔋 전기차E: 90% (360km) - 대기중
+
+🚨 긴급 충전 필요:
+  ⚡ 전기차B: 25% (주행가능 100km) - 즉시 충전 필요
+  ⚡ 전기차D: 15% (주행가능 60km) - 즉시 충전 필요
+
+🔌 충전소 예약 현황:
+  🟢 강남충전소: 3/5 이용가능 (급속충전)
+  🟢 서초충전소: 2/3 이용가능 (완속충전)
+  🔴 종로충전소: 0/4 이용가능 (급속충전)
+```
+
+---
+
+### 🌧️ 과제 5: 도로 위험도 평가 및 경고 시스템
+
+```python
+print("=== 도로 위험도 평가 및 경고 시스템 ===")
+
+# 도로 구간별 위험 요소
+road_segments = ['구간A', '구간B', '구간C', '구간D']
+road_conditions = [
+    {'rain': True, 'fog': False, 'construction': False, 'accident': False},
+    {'rain': False, 'fog': True, 'construction': True, 'accident': False},
+    {'rain': True, 'fog': False, 'construction': False, 'accident': True},
+    {'rain': False, 'fog': False, 'construction': False, 'accident': False}
+]
+
+# 도로별 위험도 계산
+road_safety = {}
+for i, segment in enumerate(road_segments):
+    conditions = road_conditions[i]
+    risk_score = 0
+    
+    # 위험 요소별 점수 부여
+    if conditions['rain']:
+        risk_score += 20    # 우천시 미끄럼 위험
+    if conditions['fog']:
+        risk_score += 30    # 안개로 인한 시야 불량
+    if conditions['construction']:
+        risk_score += 25    # 공사로 인한 차로 변경
+    if conditions['accident']:
+        risk_score += 50    # 사고로 인한 정체/위험
+    
+    road_safety[segment] = {'risk_score': risk_score, 'conditions': conditions}
+
+print("도로 구간별 위험도 분석:")
+for segment in road_segments:
+    safety = road_safety[segment]
+    risk = safety['risk_score']
+    conditions = safety['conditions']
+    
+    # 위험도 레벨 분류
+    if risk >= 50:
+        level = "매우위험"
+        level_emoji = "🔴"
+    elif risk >= 30:
+        level = "위험"
+        level_emoji = "🟠"
+    elif risk >= 15:
+        level = "주의"
+        level_emoji = "🟡"
+    else:
+        level = "안전"
+        level_emoji = "🟢"
+    
+    print(f"  {level_emoji} {segment}: {risk}점 ({level})")
+    
+    # 위험 요소 상세 표시
+    warnings = []
+    if conditions['rain']:
+        warnings.append("우천 🌧️")
+    if conditions['fog']:
+        warnings.append("안개 🌫️")
+    if conditions['construction']:
+        warnings.append("공사중 🚧")
+    if conditions['accident']:
+        warnings.append("사고발생 🚨")
+    
+    if warnings:
+        print(f"    └ 위험요소: {', '.join(warnings)}")
+
+# 우회 경로 권장
+print("\n📍 경로 권장사항:")
+safe_routes = [segment for segment, info in road_safety.items() if info['risk_score'] < 30]
+dangerous_routes = [segment for segment, info in road_safety.items() if info['risk_score'] >= 50]
+
+if safe_routes:
+    print(f"  ✅ 안전 경로: {', '.join(safe_routes)}")
+if dangerous_routes:
+    print(f"  ⚠️ 우회 권장: {', '.join(dangerous_routes)}")
+```
+
+**실행 결과:**
+```
+=== 도로 위험도 평가 및 경고 시스템 ===
+도로 구간별 위험도 분석:
+  🟡 구간A: 20점 (주의)
+    └ 위험요소: 우천 🌧️
+  🔴 구간B: 55점 (매우위험)
+    └ 위험요소: 안개 🌫️, 공사중 🚧
+  🔴 구간C: 70점 (매우위험)
+    └ 위험요소: 우천 🌧️
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
