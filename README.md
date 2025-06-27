@@ -2634,8 +2634,10 @@ def filter_detections(detections):
     return valid_detections
 ```
 
-pass - 아무것도 하지 않음
-python# 미구현 함수 플레이스홀더
+### pass - 아무것도 하지 않음
+
+```python
+# 미구현 함수 플레이스홀더
 def emergency_brake():
     """긴급 제동 시스템"""
     # TODO: 긴급 제동 로직 구현 예정
@@ -2709,7 +2711,10 @@ camera_frame = camera.read_data()
 # 캘리브레이션 수행
 lidar.calibrate()    # 아무 작업 안 함 (pass)
 camera.calibrate()   # 실제 캘리브레이션 수행
-실행 결과:
+```
+
+**실행 결과:**
+```
 프레임 1: 읽기 실패
 프레임 2: 너무 어두움
 프레임 3: 탐지 결과 없음
@@ -2721,10 +2726,16 @@ camera.calibrate()   # 실제 캘리브레이션 수행
 🚗 차량 처리
 ❓ 알 수 없는 객체 - 무시
 📷 카메라 캘리브레이션 수행
+```
 
-🎯 실전 통합 예제
-완전한 자율주행 시스템
-pythonimport cv2
+---
+
+## 🎯 실전 통합 예제
+
+### 완전한 자율주행 시스템
+
+```python
+import cv2
 import numpy as np
 from datetime import datetime
 
@@ -2953,10 +2964,16 @@ if __name__ == "__main__":
         print("\n👋 사용자에 의해 중단됨")
     except Exception as e:
         print(f"❌ 오류 발생: {e}")
+```
 
-📚 추가 학습 자료
-유용한 라이브러리들
-python# 컴퓨터 비전
+---
+
+## 📚 추가 학습 자료
+
+### 유용한 라이브러리들
+
+```python
+# 컴퓨터 비전
 import cv2          # OpenCV - 이미지/비디오 처리
 import numpy as np  # NumPy - 수치 연산
 
@@ -2972,8 +2989,12 @@ import matplotlib.pyplot as plt  # 시각화
 # 시간/날짜
 from datetime import datetime
 import time
-성능 최적화 팁
-python# 1. 리스트 컴프리헨션 사용
+```
+
+### 성능 최적화 팁
+
+```python
+# 1. 리스트 컴프리헨션 사용
 # 느린 방법
 filtered_detections = []
 for detection in detections:
@@ -3002,9 +3023,14 @@ def find_high_confidence_detection(detections, threshold=0.9):
         if detection[4] > threshold:
             return detection  # 찾으면 즉시 반환
     return None  # 없으면 None 반환
+```
 
-🔧 디버깅 팁
-python# 1. 로깅 추가
+---
+
+## 🔧 디버깅 팁
+
+```python
+# 1. 로깅 추가
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -3047,22 +3073,33 @@ def debug_draw_detections(frame, detections):
                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 0), 1)
     
     return debug_frame
+```
 
-🎓 마무리
+---
+
+## 🎓 마무리
+
 이 가이드에서 다룬 Python 핵심 문법들은 자율주행 시스템 개발의 기초가 됩니다. 각 문법 요소들이 실제 어떻게 활용되는지 이해하고, 실전 프로젝트에서 응용해보세요.
-다음 단계 학습 권장사항
 
-OpenCV 심화: 이미지 처리 고급 기법
-YOLO 모델: 실시간 객체 탐지
-칼만 필터: 객체 추적 알고리즘
-ROS (Robot Operating System): 로봇 소프트웨어 플랫폼
-딥러닝 프레임워크: PyTorch, TensorFlow
+### 다음 단계 학습 권장사항
 
-추가 리소스
+1. **OpenCV 심화**: 이미지 처리 고급 기법
+2. **YOLO 모델**: 실시간 객체 탐지
+3. **칼만 필터**: 객체 추적 알고리즘
+4. **ROS (Robot Operating System)**: 로봇 소프트웨어 플랫폼
+5. **딥러닝 프레임워크**: PyTorch, TensorFlow
 
-OpenCV 공식 문서
-Ultralytics YOLO
-자율주행 오픈소스 프로젝트
+### 추가 리소스
+
+- [OpenCV 공식 문서](https://docs.opencv.org/)
+- [Ultralytics YOLO](https://github.com/ultralytics/ultralytics)
+- [자율주행 오픈소스 프로젝트](https://github.com/topics/autonomous-driving)
+
+---
+
+**💡 팁**: 이 가이드의 모든 코드는 실제 프로젝트에서 바로 사용할 수 있도록 작성되었습니다. 각 예제를 직접 실행해보며 학습하는 것을 권장합니다!
+
+**📝 기여**: 이 가이드에 개선사항이나 추가할 내용이 있다면 언제든 PR을 보내주세요!
 
 # 🚗 자율주행 개발 핵심 변수 가이드
 
