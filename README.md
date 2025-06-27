@@ -141,10 +141,6 @@ pip install matplotlib as plt
     hello_world()
     ````
 
-    ```
-    
-    ```
-
 ### 2.5. 링크 (Links): 관련 자료 연결하기
 
 `[링크 텍스트](링크_URL)` 형식으로 외부 웹사이트나 저장소 내의 다른 파일로 연결할 수 있습니다.
@@ -192,7 +188,6 @@ pip install matplotlib as plt
 | 왼쪽 정렬 | 중앙 정렬 | 오른쪽 정렬 |
 | 데이터 A | 데이터 B | 데이터 C    |
 ```
-
 -----
 
 ## ✨ 3. GitHub Flavored Markdown (GFM): GitHub만의 특별한 기능
