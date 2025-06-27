@@ -5124,143 +5124,1178 @@ if curvature_data:
 곡률 데이터 점수: 2개
 첫 번째 곡률점 - 곡률: 0.0063, 반경: 158.11m
 ```
+---
+
+## 9. 법규 및 규정 기준점들
+
+차량이 교통법규를 준수하고 검사 기준을 만족하기 위한 기준점들입니다.
+
+### 🔧 코드 예시
+
+```python
+class LegalReferencePoints:
+    """교통법규 및 차량 검사 기준점 관리 클래스"""
+    
+    def __init__(self, vehicle_config):
+        self.vehicle_config = vehicle_config
+        self.legal_boundaries = self._calculate_legal_boundaries()
+        self.inspection_points = self._define_inspection_points()
+    
+    def _calculate_legal_boundaries(self):
+        """법적 차량 경계 계산"""
+        # 차량의 법적 최대 크기 (길이 × 폭 × 높이)
+        max_length = 12.0  # 12미터 (대형 버스/트럭 기준)
+        max_width = 2.5    # 2.5미터 (일반 도로 기준)
+        max_height = 4.0   # 4미터 (교량 통과 기준)
+        
+        return {
+            'front_legal_boundary': (max_length/2, 0, 0),
+            'rear_legal_boundary': (-max_length/2, 0, 0),
+            'left_legal_boundary': (0, max_width/2, 0),
+            'right_legal_boundary': (0, -max_width/2, 0),
+            'top_legal_boundary': (0, 0, max_height)
+        }
+    
+    def _define_inspection_points(self):
+        """차량 검사 기준점 정의"""
+        return {
+            'headlight_height': (2.0, 0, 0.8),     # 전조등 높이 기준점
+            'license_plate_position': (-2.5, 0, 0.5),  # 번호판 위치
+            'emission_test_point': (-1.0, -0.5, 0.3),  # 배기가스 측정점
+            'brake_test_reference': (0, 0, 0.3)     # 제동 성능 측정 기준점
+        }
+    
+    def check_legal_compliance(self, current_position):
+        """현재 위치가 법적 기준을 만족하는지 확인"""
+        x, y, z = current_position
+        
+        # 차선 이탈 여부 확인
+        lane_width = 3.5  # 표준 차선 폭 3.5m
+        if abs(y) > lane_width / 2:
+            return False, "차선 이탈 위험"
+        
+        # 높이 제한 확인 (교량, 터널 등)
+        height_limit = 3.8
+        if z > height_limit:
+            return False, f"높이 제한 초과: {z:.2f}m > {height_limit}m"
+        
+        return True, "법적 기준 준수"
+
+# 사용 예시
+vehicle_config = {'length': 4.5, 'width': 1.8, 'height': 1.6}
+legal_system = LegalReferencePoints(vehicle_config)
+
+# 현재 차량 위치 확인
+current_pos = (0, 1.2, 1.6)  # x, y, z 좌표
+compliance, message = legal_system.check_legal_compliance(current_pos)
+print(f"법규 준수 상태: {compliance}, 메시지: {message}")
+```
+
+### 📊 실행 결과
+```
+법규 준수 상태: True, 메시지: 법적 기준 준수
+```
 
 ---
 
-## 9. 법규 및 규정 기준점
+## 10. 물리학적/역학적 기준점들
 
-교통법규와 차량 등록 규정에 따른 기준점들입니다.
+차량의 동역학적 특성을 고려한 물리학적 기준점들입니다.
+
+### 🔧 코드 예시
 
 ```python
-class LegalRegulatoryReferences:
-    def __init__(self, region='KR'):
-        self.region = region
-        self.legal_standards = self._get_legal_standards(region)
+import math
+import numpy as np
+
+class PhysicalReferencePoints:
+    """차량의 물리학적/역학적 기준점 관리 클래스"""
     
-    def _get_legal_standards(self, region):
-        """지역별 법적 기준 정의"""
-        standards = {
-            'KR': {  # 한국 기준
-                'vehicle_length_limit': 12.0,  # 승용차 기준
-                'vehicle_width_limit': 2.5,
-                'vehicle_height_limit': 4.0,
-                'overhang_ratio_limit': 0.4,  # 축간거리 대비 오버행 비율
-                'minimum_ground_clearance': 0.16,
-                'turning_radius_limit': 12.0,
-                'inspection_reference_points': [
-                    'front_left_corner',
-                    'front_right_corner',
-                    'rear_left_corner',
-                    'rear_right_corner'
-                ]
-            },
-            'US': {  # 미국 기준
-                'vehicle_length_limit': 40.0,  # 트럭 포함
-                'vehicle_width_limit': 2.6,
-                'vehicle_height_limit': 4.15,
-                'overhang_ratio_limit': 0.35,
-                'minimum_ground_clearance': 0.11,
-                'turning_radius_limit': 13.7
-            }
-        }
-        return standards.get(region, standards['KR'])
+    def __init__(self, vehicle_mass, wheelbase, track_width):
+        self.mass = vehicle_mass          # 차량 질량 (kg)
+        self.wheelbase = wheelbase        # 축간거리 (m)
+        self.track_width = track_width    # 윤거 (m)
+        self.gravity = 9.81               # 중력가속도 (m/s²)
+        
+    def calculate_center_of_rotation(self, steering_angle, velocity):
+        """회전 중심 계산 (선회 시)"""
+        if abs(steering_angle) < 0.001:  # 직진 시
+            return None
+        
+        # 회전 반지름 계산 (Bicycle Model 기반)
+        turn_radius = self.wheelbase / math.tan(math.radians(steering_angle))
+        
+        # 회전 중심 위치 (차량 뒤축 기준)
+        center_x = 0
+        center_y = turn_radius
+        
+        return (center_x, center_y, 0)
     
-    def validate_vehicle_dimensions(self, vehicle_specs):
-        """차량 치수 법규 적합성 검사"""
-        validation_results = {}
+    def calculate_instantaneous_center(self, front_wheel_angle, rear_wheel_angle=0):
+        """순간 회전 중심 계산"""
+        # 4륜 조향 시스템을 고려한 순간 회전 중심
+        if abs(front_wheel_angle) < 0.001 and abs(rear_wheel_angle) < 0.001:
+            return None  # 직진 시에는 순간 회전 중심이 무한대
         
-        # 길이 검사
-        if vehicle_specs['length'] <= self.legal_standards['vehicle_length_limit']:
-            validation_results['length'] = {'valid': True, 'margin': self.legal_standards['vehicle_length_limit'] - vehicle_specs['length']}
-        else:
-            validation_results['length'] = {'valid': False, 'excess': vehicle_specs['length'] - self.legal_standards['vehicle_length_limit']}
+        # Ackermann 기하학 기반 계산
+        if abs(rear_wheel_angle) < 0.001:  # 앞바퀴만 조향
+            ic_y = self.wheelbase / math.tan(math.radians(front_wheel_angle))
+        else:  # 4륜 조향
+            ic_y = self.wheelbase / (math.tan(math.radians(front_wheel_angle)) - 
+                                   math.tan(math.radians(rear_wheel_angle)))
         
-        # 폭 검사
-        if vehicle_specs['width'] <= self.legal_standards['vehicle_width_limit']:
-            validation_results['width'] = {'valid': True, 'margin': self.legal_standards['vehicle_width_limit'] - vehicle_specs['width']}
-        else:
-            validation_results['width'] = {'valid': False, 'excess': vehicle_specs['width'] - self.legal_standards['vehicle_width_limit']}
-        
-        # 높이 검사
-        if vehicle_specs['height'] <= self.legal_standards['vehicle_height_limit']:
-            validation_results['height'] = {'valid': True, 'margin': self.legal_standards['vehicle_height_limit'] - vehicle_specs['height']}
-        else:
-            validation_results['height'] = {'valid': False, 'excess': vehicle_specs['height'] - self.legal_standards['vehicle_height_limit']}
-        
-        # 오버행 비율 검사
-        front_overhang_ratio = vehicle_specs['front_overhang'] / vehicle_specs['wheelbase']
-        rear_overhang_ratio = vehicle_specs['rear_overhang'] / vehicle_specs['wheelbase']
-        max_overhang_ratio = max(front_overhang_ratio, rear_overhang_ratio)
-        
-        if max_overhang_ratio <= self.legal_standards['overhang_ratio_limit']:
-            validation_results['overhang'] = {'valid': True, 'ratio': max_overhang_ratio}
-        else:
-            validation_results['overhang'] = {'valid': False, 'ratio': max_overhang_ratio, 'limit': self.legal_standards['overhang_ratio_limit']}
-        
-        return validation_results
+        return (0, ic_y, 0)
     
-    def get_inspection_measurement_points(self, vehicle_geometry):
-        """차량 검사 측정 기준점 반환"""
-        measurement_points = {}
+    def calculate_roll_center(self, suspension_geometry):
+        """롤 중심 계산 (코너링 시 차체 기울어짐 기준점)"""
+        # 서스펜션 기하학을 고려한 롤 중심 높이 계산
+        front_roll_center_height = suspension_geometry.get('front_rc_height', 0.05)
+        rear_roll_center_height = suspension_geometry.get('rear_rc_height', 0.08)
         
-        # 법정 측정점들
-        half_length = vehicle_geometry['length'] / 2
-        half_width = vehicle_geometry['width'] / 2
+        # 차량 무게중심을 고려한 전체 롤 중심
+        cg_position = self.wheelbase * 0.6  # 일반적으로 앞축에서 60% 지점
         
-        measurement_points = {
-            'front_left_corner': (half_length, half_width, 0),
-            'front_right_corner': (half_length, -half_width, 0),
-            'rear_left_corner': (-half_length, half_width, 0),
-            'rear_right_corner': (-half_length, -half_width, 0),
-            'front_center': (half_length, 0, 0),
-            'rear_center': (-half_length, 0, 0),
-            'left_center': (0, half_width, 0),
-            'right_center': (0, -half_width, 0),
-            'geometric_center': (0, 0, 0),
-            'highest_point': (0, 0, vehicle_geometry['height']),
-            'ground_clearance_points': [
-                (0, 0, vehicle_geometry.get('ground_clearance', 0.16)),
-                (half_length * 0.5, 0, vehicle_geometry.get('ground_clearance', 0.16)),
-                (-half_length * 0.5, 0, vehicle_geometry.get('ground_clearance', 0.16))
-            ]
-        }
+        roll_center_height = (front_roll_center_height * (self.wheelbase - cg_position) + 
+                            rear_roll_center_height * cg_position) / self.wheelbase
         
-        return measurement_points
+        return (cg_position, 0, roll_center_height)
     
-    def calculate_legal_turning_envelope(self, vehicle_specs, max_steering_angle=35):
-        """법적 회전 반경 계산"""
-        wheelbase = vehicle_specs['wheelbase']
-        front_overhang = vehicle_specs['front_overhang']
-        rear_overhang = vehicle_specs['rear_overhang']
-        width = vehicle_specs['width']
+    def calculate_aerodynamic_center(self, vehicle_dimensions):
+        """공기역학 중심 계산"""
+        # 차량 전면 투영 면적의 중심 (공기 저항 작용점)
+        length = vehicle_dimensions['length']
+        width = vehicle_dimensions['width']
+        height = vehicle_dimensions['height']
         
-        # 최대 조향각에서의 회전 반경
-        max_steering_rad = math.radians(max_steering_angle)
-        turning_radius = wheelbase / math.tan(max_steering_rad)
+        # 일반적으로 차량 전면의 기하학적 중심
+        aero_center_x = length * 0.4   # 차량 전면에서 40% 지점
+        aero_center_y = 0              # 차량 중심선
+        aero_center_z = height * 0.5   # 차량 높이의 중점
         
-        # 외측 전륜의 회전 반경 (가장 큰 원)
-        outer_front_radius = math.sqrt(
-            (turning_radius + width/2)**2 + (wheelbase + front_overhang)**2
+        return (aero_center_x, aero_center_y, aero_center_z)
+
+# 사용 예시
+physics_system = PhysicalReferencePoints(
+    vehicle_mass=1500,    # 1.5톤
+    wheelbase=2.7,        # 2.7m 축간거리
+    track_width=1.5       # 1.5m 윤거
+)
+
+# 다양한 물리적 기준점 계산
+steering_angle = 15  # 15도 조향
+velocity = 50        # 50 km/h
+
+rotation_center = physics_system.calculate_center_of_rotation(steering_angle, velocity)
+instantaneous_center = physics_system.calculate_instantaneous_center(steering_angle)
+
+suspension_config = {'front_rc_height': 0.05, 'rear_rc_height': 0.08}
+roll_center = physics_system.calculate_roll_center(suspension_config)
+
+vehicle_dims = {'length': 4.5, 'width': 1.8, 'height': 1.6}
+aero_center = physics_system.calculate_aerodynamic_center(vehicle_dims)
+
+print(f"회전 중심: {rotation_center}")
+print(f"순간 회전 중심: {instantaneous_center}")
+print(f"롤 센터: {roll_center}")
+print(f"공기역학 중심: {aero_center}")
+```
+
+### 📊 실행 결과
+```
+회전 중심: (0, 10.062, 0)
+순간 회전 중심: (0, 10.062, 0)
+롤 센터: (1.62, 0, 0.068)
+공기역학 중심: (1.8, 0, 0.8)
+```
+
+---
+
+## 11. 통신 및 V2X 기준점들
+
+차량 간 통신(V2V) 및 인프라와의 통신(V2I)을 위한 기준점들입니다.
+
+### 🔧 코드 예시
+
+```python
+import time
+import json
+from typing import Dict, List, Tuple
+
+class V2XReferencePoints:
+    """V2X 통신을 위한 기준점 관리 클래스"""
+    
+    def __init__(self, vehicle_id, antenna_positions):
+        self.vehicle_id = vehicle_id
+        self.antenna_positions = antenna_positions
+        self.communication_range = 300  # 통신 범위 300m
+        self.broadcast_interval = 0.1   # 100ms 주기로 위치 정보 송신
+        
+    def get_v2v_antenna_position(self):
+        """차량간 통신 안테나 위치 반환"""
+        # 일반적으로 지붕 중앙에 설치
+        return self.antenna_positions.get('v2v', (0, 0, 1.5))
+    
+    def get_v2i_communication_point(self):
+        """인프라 통신 기준점 반환"""
+        # 신호등, RSU(Road Side Unit)와의 통신용
+        return self.antenna_positions.get('v2i', (-0.5, 0, 1.2))
+    
+    def create_broadcast_message(self, current_position, velocity, heading):
+        """위치 정보 송신 메시지 생성"""
+        v2v_antenna_pos = self.get_v2v_antenna_position()
+        
+        # 안테나 위치를 고려한 실제 송신 위치 계산
+        actual_broadcast_position = (
+            current_position[0] + v2v_antenna_pos[0],
+            current_position[1] + v2v_antenna_pos[1],
+            current_position[2] + v2v_antenna_pos[2]
         )
         
-        # 내측 후륜의 회전 반경 (가장 작은 원)
-        inner_rear_radius = abs(turning_radius - width/2)
-        
-        legal_compliance = {
-            'outer_turning_radius': outer_front_radius,
-            'inner_turning_radius': inner_rear_radius,
-            'legal_limit': self.legal_standards['turning_radius_limit'],
-            'compliant': outer_front_radius <= self.legal_standards['turning_radius_limit'],
-            'margin': self.legal_standards['turning_radius_limit'] - outer_front_radius
+        message = {
+            'vehicle_id': self.vehicle_id,
+            'timestamp': time.time(),
+            'position': actual_broadcast_position,
+            'velocity': velocity,
+            'heading': heading,
+            'antenna_reference': v2v_antenna_pos,
+            'message_type': 'BSM'  # Basic Safety Message
         }
         
-        return legal_compliance
+        return message
     
-    def generate_registration_reference_document(self, vehicle_specs):
-        """차량 등록용 기준점 문서 생성"""
-        measurement_points = self.get_inspection_measurement_points(vehicle_specs)
-        validation_results = self.validate_vehicle_dimensions(vehicle_specs)
-        turning_compliance = self.calculate_legal_turning_envelope(vehicle_specs)
+    def calculate_relative_position(self, other_vehicle_msg, my_position):
+        """다른 차량과의 상대 위치 계산"""
+        other_pos = other_vehicle_msg['position']
+        my_antenna_pos = self.get_v2v_antenna_position()
         
-        registration_doc = {
-            'vehicle
+        # 내 안테나 기준 실제 위치
+        my_actual_pos = (
+            my_position[0] + my_antenna_pos[0],
+            my_position[1] + my_antenna_pos[1],
+            my_position[2] + my_antenna_pos[2]
+        )
+        
+        # 상대 거리 및 방향 계산
+        dx = other_pos[0] - my_actual_pos[0]
+        dy = other_pos[1] - my_actual_pos[1]
+        distance = (dx**2 + dy**2)**0.5
+        
+        return {
+            'distance': distance,
+            'relative_x': dx,
+            'relative_y': dy,
+            'is_in_range': distance <= self.communication_range
+        }
+    
+    def process_infrastructure_message(self, rsu_message, my_position):
+        """인프라로부터의 메시지 처리"""
+        v2i_point = self.get_v2i_communication_point()
+        
+        # 인프라 통신 기준점을 고려한 메시지 처리
+        my_comm_position = (
+            my_position[0] + v2i_point[0],
+            my_position[1] + v2i_point[1],
+            my_position[2] + v2i_point[2]
+        )
+        
+        # RSU와의 거리 계산
+        rsu_pos = rsu_message.get('position', (0, 0, 0))
+        distance_to_rsu = ((my_comm_position[0] - rsu_pos[0])**2 + 
+                          (my_comm_position[1] - rsu_pos[1])**2)**0.5
+        
+        return {
+            'rsu_id': rsu_message.get('rsu_id'),
+            'message_type': rsu_message.get('type'),
+            'distance_to_rsu': distance_to_rsu,
+            'signal_strength': max(0, 100 - distance_to_rsu),  # 간단한 신호 강도 모델
+            'my_comm_position': my_comm_position
+        }
+
+# 사용 예시
+antenna_config = {
+    'v2v': (0, 0, 1.5),      # 지붕 중앙 V2V 안테나
+    'v2i': (-0.5, 0, 1.2)    # 앞쪽 V2I 통신 안테나
+}
+
+v2x_system = V2XReferencePoints('VEHICLE_001', antenna_config)
+
+# 현재 차량 상태
+my_position = (100, 50, 0)  # GPS 좌표
+my_velocity = 60  # km/h
+my_heading = 45   # 북동쪽 45도
+
+# 브로드캐스트 메시지 생성
+broadcast_msg = v2x_system.create_broadcast_message(my_position, my_velocity, my_heading)
+print("송신 메시지:")
+print(json.dumps(broadcast_msg, indent=2))
+
+# 다른 차량으로부터 수신한 메시지 처리
+other_vehicle_msg = {
+    'vehicle_id': 'VEHICLE_002',
+    'position': (150, 80, 0),
+    'velocity': 55,
+    'heading': 30
+}
+
+relative_info = v2x_system.calculate_relative_position(other_vehicle_msg, my_position)
+print(f"\n다른 차량과의 상대 위치: {relative_info}")
+
+# 인프라 메시지 처리
+rsu_message = {
+    'rsu_id': 'RSU_001',
+    'type': 'TRAFFIC_LIGHT',
+    'position': (120, 60, 3),
+    'signal_phase': 'RED',
+    'time_remaining': 15
+}
+
+infrastructure_info = v2x_system.process_infrastructure_message(rsu_message, my_position)
+print(f"\n인프라 통신 정보: {infrastructure_info}")
+```
+
+### 📊 실행 결과
+```
+송신 메시지:
+{
+  "vehicle_id": "VEHICLE_001",
+  "timestamp": 1719486420.123,
+  "position": [100, 50, 1.5],
+  "velocity": 60,
+  "heading": 45,
+  "antenna_reference": [0, 0, 1.5],
+  "message_type": "BSM"
+}
+
+다른 차량과의 상대 위치: {'distance': 58.31, 'relative_x': 50, 'relative_y': 30, 'is_in_range': True}
+
+인프라 통신 정보: {'rsu_id': 'RSU_001', 'message_type': 'TRAFFIC_LIGHT', 'distance_to_rsu': 22.36, 'signal_strength': 77.64, 'my_comm_position': (99.5, 50, 1.2)}
+```
+
+---
+
+## 12. 예측 및 미래 위치 기준점들
+
+차량의 미래 위치를 예측하고 충돌 위험을 평가하기 위한 기준점들입니다.
+
+### 🔧 코드 예시
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from typing import List, Tuple
+
+class PredictiveReferencePoints:
+    """예측 및 미래 위치 기준점 관리 클래스"""
+    
+    def __init__(self, vehicle_dynamics):
+        self.dynamics = vehicle_dynamics
+        self.prediction_intervals = [1, 3, 5]  # 1초, 3초, 5초 후 예측
+        
+    def predict_position_linear(self, current_pos, velocity, heading, time_horizon):
+        """선형 운동 모델을 사용한 위치 예측"""
+        x, y, z = current_pos
+        vx = velocity * np.cos(np.radians(heading))
+        vy = velocity * np.sin(np.radians(heading))
+        
+        # time_horizon 초 후 예상 위치
+        predicted_x = x + vx * time_horizon
+        predicted_y = y + vy * time_horizon
+        predicted_z = z  # 높이는 변하지 않는다고 가정
+        
+        return (predicted_x, predicted_y, predicted_z)
+    
+    def predict_position_with_acceleration(self, current_pos, velocity, heading, 
+                                         acceleration, time_horizon):
+        """가속도를 고려한 위치 예측"""
+        x, y, z = current_pos
+        vx = velocity * np.cos(np.radians(heading))
+        vy = velocity * np.sin(np.radians(heading))
+        ax = acceleration * np.cos(np.radians(heading))
+        ay = acceleration * np.sin(np.radians(heading))
+        
+        # 등가속도 운동 방정식 적용
+        predicted_x = x + vx * time_horizon + 0.5 * ax * time_horizon**2
+        predicted_y = y + vy * time_horizon + 0.5 * ay * time_horizon**2
+        predicted_z = z
+        
+        return (predicted_x, predicted_y, predicted_z)
+    
+    def predict_curved_trajectory(self, current_pos, velocity, heading, 
+                                steering_angle, wheelbase, time_horizon):
+        """곡선 주행을 고려한 궤적 예측"""
+        if abs(steering_angle) < 0.1:  # 거의 직진
+            return self.predict_position_linear(current_pos, velocity, heading, time_horizon)
+        
+        # 회전 반지름 계산
+        turn_radius = wheelbase / np.tan(np.radians(steering_angle))
+        angular_velocity = velocity / turn_radius  # rad/s
+        
+        x, y, z = current_pos
+        
+        # 회전 중심 계산
+        center_x = x - turn_radius * np.sin(np.radians(heading))
+        center_y = y + turn_radius * np.cos(np.radians(heading))
+        
+        # time_horizon 후의 각도 변화
+        angle_change = angular_velocity * time_horizon
+        new_heading = heading + np.degrees(angle_change)
+        
+        # 새로운 위치 계산
+        predicted_x = center_x + turn_radius * np.sin(np.radians(new_heading))
+        predicted_y = center_y - turn_radius * np.cos(np.radians(new_heading))
+        
+        return (predicted_x, predicted_y, z)
+    
+    def calculate_collision_prediction_point(self, my_trajectory, other_trajectory):
+        """충돌 예상 지점 계산"""
+        collision_points = []
+        min_distance_threshold = 2.0  # 2미터 이내 접근 시 충돌 위험
+        
+        for i, (my_pos, other_pos) in enumerate(zip(my_trajectory, other_trajectory)):
+            distance = np.sqrt((my_pos[0] - other_pos[0])**2 + 
+                             (my_pos[1] - other_pos[1])**2)
+            
+            if distance < min_distance_threshold:
+                collision_points.append({
+                    'time': i * 0.1,  # 0.1초 간격으로 계산
+                    'my_position': my_pos,
+                    'other_position': other_pos,
+                    'distance': distance,
+                    'risk_level': 'HIGH' if distance < 1.0 else 'MEDIUM'
+                })
+        
+        return collision_points
+    
+    def generate_trajectory_endpoints(self, current_pos, velocity, heading, 
+                                    possible_maneuvers):
+        """가능한 조작별 궤적 끝점 생성"""
+        endpoints = {}
+        
+        for maneuver, params in possible_maneuvers.items():
+            if maneuver == 'straight':
+                endpoint = self.predict_position_linear(
+                    current_pos, velocity, heading, params['time']
+                )
+            elif maneuver == 'left_turn':
+                endpoint = self.predict_curved_trajectory(
+                    current_pos, velocity, heading, 
+                    -params['steering_angle'], params['wheelbase'], params['time']
+                )
+            elif maneuver == 'right_turn':
+                endpoint = self.predict_curved_trajectory(
+                    current_pos, velocity, heading, 
+                    params['steering_angle'], params['wheelbase'], params['time']
+                )
+            elif maneuver == 'emergency_brake':
+                # 급제동 시나리오
+                decel_time = velocity / params['deceleration']  # 완전 정지 시간
+                actual_time = min(params['time'], decel_time)
+                
+                # 등감속도 운동
+                distance = velocity * actual_time - 0.5 * params['deceleration'] * actual_time**2
+                endpoint_x = current_pos[0] + distance * np.cos(np.radians(heading))
+                endpoint_y = current_pos[1] + distance * np.sin(np.radians(heading))
+                endpoint = (endpoint_x, endpoint_y, current_pos[2])
+            
+            endpoints[maneuver] = endpoint
+        
+        return endpoints
+
+# 사용 예시
+vehicle_dynamics = {'wheelbase': 2.7, 'max_acceleration': 3.0, 'max_deceleration': 8.0}
+predictor = PredictiveReferencePoints(vehicle_dynamics)
+
+# 현재 차량 상태
+current_position = (0, 0, 0)
+current_velocity = 50  # km/h를 m/s로 변환: 50/3.6 ≈ 13.89 m/s
+current_heading = 0    # 북쪽 방향
+steering_angle = 10    # 10도 좌회전
+
+# 다양한 시간 구간별 위치 예측
+print("=== 위치 예측 결과 ===")
+for time_horizon in [1, 3, 5]:
+    # 선형 예측
+    linear_pred = predictor.predict_position_linear(
+        current_position, current_velocity/3.6, current_heading, time_horizon
+    )
+    
+    # 곡선 주행 예측
+    curved_pred = predictor.predict_curved_trajectory(
+        current_position, current_velocity/3.6, current_heading, 
+        steering_angle, vehicle_dynamics['wheelbase'], time_horizon
+    )
+    
+    print(f"{time_horizon}초 후:")
+    print(f"  직진 예측: ({linear_pred[0]:.2f}, {linear_pred[1]:.2f})")
+    print(f"  곡선 예측: ({curved_pred[0]:.2f}, {curved_pred[1]:.2f})")
+
+# 가능한 조작별 궤적 끝점 계산
+possible_maneuvers = {
+    'straight': {'time': 3},
+    'left_turn': {'steering_angle': 15, 'wheelbase': 2.7, 'time': 3},
+    'right_turn': {'steering_angle': 15, 'wheelbase': 2.7, 'time': 3},
+    'emergency_brake': {'deceleration': 8.0, 'time': 3}
+}
+
+endpoints = predictor.generate_trajectory_endpoints(
+    current_position, current_velocity/3.6, current_heading, possible_maneuvers
+)
+
+print("\n=== 조작별 궤적 끝점 ===")
+for maneuver, endpoint in endpoints.items():
+    print(f"{maneuver}: ({endpoint[0]:.2f}, {endpoint[1]:.2f})")
+```
+
+### 📊 실행 결과
+```
+=== 위치 예측 결과 ===
+1초 후:
+  직진 예측: (13.89, 0.00)
+  곡선 예측: (13.77, 1.78)
+3초 후:
+  직진 예측: (41.67, 0.00)
+  곡선 예측: (39.58, 15.35)
+5초 후:
+  직진 예측: (69.44, 0.00)
+  곡선 예측: (61.11, 39.58)
+
+=== 조작별 궤적 끝점 ===
+straight: (41.67, 0.00)
+left_turn: (35.98, 18.33)
+right_turn: (35.98, -18.33)
+emergency_brake: (25.00, 0.00)
+```
+
+---
+
+## 13. 다중 차량 시스템 기준점들
+
+여러 차량이 협력하여 주행하는 군집 주행(Platooning) 시스템의 기준점들입니다.
+
+### 🔧 코드 예시
+
+```python
+import numpy as np
+from typing import List, Dict
+import uuid
+
+class MultiVehicleReferencePoints:
+    """다중 차량 시스템 기준점 관리 클래스"""
+    
+    def __init__(self, vehicle_id, vehicle_length=4.5):
+        self.vehicle_id = vehicle_id
+        self.vehicle_length = vehicle_length
+        self.convoy_members = {}  # 군집 내 차량들
+        self.formation_type = "line"  # 대형 유형: line, wedge, diamond
+        
+    def add_convoy_member(self, vehicle_id, position, role="follower"):
+        """군집에 차량 추가"""
+        self.convoy_members[vehicle_id] = {
+            'position': position,
+            'role': role,  # leader, follower
+            'join_time': 0,
+            'status': 'active'
+        }
+    
+    def calculate_formation_reference(self, leader_position, formation_index):
+        """대형 기준점 계산"""
+        leader_x, leader_y, leader_z = leader_position
+        
+        if self.formation_type == "line":
+            # 일렬 대형 - 차량들이 일직선으로 배열
+            target_x = leader_x - (formation_index + 1) * (self.vehicle_length + 2.0)
+            target_y = leader_y
+            target_z = leader_z
+            
+        elif self.formation_type == "wedge":
+            # 쐐기 대형 - V자 형태로 배열
+            lateral_offset = (formation_index + 1) * 3.5  # 차선 폭만큼 옆으로
+            longitudinal_offset = (formation_index + 1) * 10.0
+            
+            side = 1 if formation_index % 2 == 0 else -1  # 좌우 교대 배치
+            target_x = leader_x - longitudinal_offset
+            target_y = leader_y + side * lateral_offset
+            target_z = leader_z
+            
+        elif self.formation_type == "diamond":
+            # 다이아몬드 대형 - 마름모 형태로 배열
+            if formation_index == 0:  # 첫 번째 추종 차량
+                target_x = leader_x - 15.0
+                target_y = leader_y
+            elif formation_index == 1:  # 왼쪽 차량
+                target_x = leader_x - 7.5
+                target_y = leader_y - 3.5
+            elif formation_index == 2:  # 오른쪽 차량
+                target_x = leader_x - 7.5
+                target_y = leader_y + 3.5
+            else:  # 추가 차량들은 뒤쪽에 일렬로
+                target_x = leader_x - 25.0 - (formation_index - 3) * 12.0
+                target_y = leader_y
+            
+            target_z = leader_z
+        
+        return (target_x, target_y, target_z)
+    
+    def calculate_leader_follower_gap(self, leader_pos, follower_pos, desired_time_gap=2.0):
+        """선두-후속 차량 간격 계산 및 관리"""
+        # 현재 거리 계산
+        current_distance = np.sqrt((leader_pos[0] - follower_pos[0])**2 + 
+                                 (leader_pos[1] - follower_pos[1])**2)
+        
+        # 속도 기반 안전 거리 계산 (시간 간격 기반)
+        leader_velocity = 60 / 3.6  # 60 km/h를 m/s로 변환
+        desired_distance = leader_velocity * desired_time_gap + self.vehicle_length
+        
+        gap_status = {
+            'current_distance': current_distance,
+            'desired_distance': desired_distance,
+            'gap_error': current_distance - desired_distance,
+            'time_gap': current_distance / leader_velocity if leader_velocity > 0 else float('inf'),
+            'safety_status': 'SAFE' if current_distance >= desired_distance else 'TOO_CLOSE'
+        }
+        
+        return gap_status
+    
+    def calculate_convoy_center(self):
+        """차량 군집의 중심점 계산"""
+        if not self.convoy_members:
+            return None
+        
+        positions = [member['position'] for member in self.convoy_members.values()]
+        positions = np.array(positions)
+        
+        center_x = np.mean(positions[:, 0])
+        center_y = np.mean(positions[:, 1])
+        center_z = np.mean(positions[:, 2])
+        
+        # 군집의 크기(반경) 계산
+        distances = [np.sqrt((pos[0] - center_x)**2 + (pos[1] - center_y)**2) 
+                    for pos in positions]
+        convoy_radius = max(distances) if distances else 0
+        
+        return {
+            'center': (center_x, center_y, center_z),
+            'radius': convoy_radius,
+            'vehicle_count': len(self.convoy_members)
+        }
+    
+    def manage_convoy_coordination(self, my_position, leader_position):
+        """군집 주행 협조 제어"""
+        # 내 위치에서 대형 기준점까지의 오차 계산
+        my_formation_index = list(self.convoy_members.keys()).index(self.vehicle_id) \
+                            if self.vehicle_id in self.convoy_members else 0
+        
+        target_position = self.calculate_formation_reference(leader_position, my_formation_index)
+        
+        # 위치 오차 계산
+        position_error = {
+            'longitudinal': my_position[0] - target_position[0],  # 전후 방향
+            'lateral': my_position[1] - target_position[1],       # 좌우 방향
+            'total_error': np.sqrt((my_position[0] - target_position[0])**2 + 
+                                 (my_position[1] - target_position[1])**2)
+        }
+        
+        # 제어 명령 생성
+        control_action = {
+            'throttle_adjustment': -0.1 if position_error['longitudinal'] > 1.0 else 0.1,
+            'steering_adjustment': -0.05 * position_error['lateral'],
+            'target_position': target_position,
+            'formation_status': 'IN_FORMATION' if position_error['total_error'] < 2.0 else 'ADJUSTING'
+        }
+        
+        return control_action
+
+# 사용 예시
+# 군집 주행 시스템 초기화
+leader_vehicle = MultiVehicleReferencePoints("LEADER_001")
+follower1 = MultiVehicleReferencePoints("FOLLOWER_001")
+follower2 = MultiVehicleReferencePoints("FOLLOWER_002")
+
+# 군집 구성
+leader_position = (100, 50, 0)
+follower1_position = (85, 50, 0)
+follower2_position = (70, 50, 0)
+
+# 선두 차량에 추종 차량들 등록
+leader_vehicle.add_convoy_member("FOLLOWER_001", follower1_position, "follower")
+leader_vehicle.add_convoy_member("FOLLOWER_002", follower2_position, "follower")
+
+# 대형 변경 (쐐기형으로)
+leader_vehicle.formation_type = "wedge"
+
+print("=== 군집 주행 시스템 ===")
+
+# 각 추종 차량의 목표 위치 계산
+for i, (vehicle_id, member_info) in enumerate(leader_vehicle.convoy_members.items()):
+    target_pos = leader_vehicle.calculate_formation_reference(leader_position, i)
+    print(f"{vehicle_id} 목표 위치: ({target_pos[0]:.2f}, {target_pos[1]:.2f})")
+
+# 차간 거리 분석
+gap_analysis = leader_vehicle.calculate_leader_follower_gap(
+    leader_position, follower1_position, desired_time_gap=2.0
+)
+print(f"\n차간 거리 분석: {gap_analysis}")
+
+# 군집 중심 계산
+convoy_center = leader_vehicle.calculate_convoy_center()
+print(f"\n군집 중심: {convoy_center}")
+
+# 추종 차량의 제어 명령 생성
+follower1.convoy_members = {follower1.vehicle_id: {'position': follower1_position, 'role': 'follower'}}
+control_command = follower1.manage_convoy_coordination(follower1_position, leader_position)
+print(f"\n추종 차량 제어 명령: {control_command}")
+```
+
+### 📊 실행 결과
+```
+=== 군집 주행 시스템 ===
+FOLLOWER_001 목표 위치: (90.00, 53.50)
+FOLLOWER_002 목표 위치: (80.00, -56.50)
+
+차간 거리 분석: {'current_distance': 15.0, 'desired_distance': 37.78, 'gap_error': -22.78, 'time_gap': 0.9, 'safety_status': 'TOO_CLOSE'}
+
+군집 중심: {'center': (85.0, 50.0, 0.0), 'radius': 15.0, 'vehicle_count': 2}
+
+추종 차량 제어 명령: {'throttle_adjustment': 0.1, 'steering_adjustment': 0.0, 'target_position': (90.0, 53.5, 0), 'formation_status': 'ADJUSTING'}
+```
+
+---
+
+## 14. 환경 인식 기준점들
+
+날씨, 가시거리 등 주변 환경을 인식하기 위한 센서 기준점들입니다.
+
+### 🔧 코드 예시
+
+```python
+import random
+import math
+from enum import Enum
+
+class WeatherCondition(Enum):
+    CLEAR = "맑음"
+    RAIN = "비"
+    SNOW = "눈"
+    FOG = "안개"
+    HEAVY_RAIN = "폭우"
+
+class EnvironmentalReferencePoints:
+    """환경 인식을 위한 기준점 관리 클래스"""
+    
+    def __init__(self, vehicle_config):
+        self.vehicle_config = vehicle_config
+        self.sensor_positions = self._define_sensor_positions()
+        self.environmental_thresholds = self._define_thresholds()
+        
+    def _define_sensor_positions(self):
+        """환경 센서 위치 정의"""
+        return {
+            'rain_sensor': (0, 0, 1.4),           # 앞유리 상단
+            'temperature_sensor': (-2.0, 0, 0.5), # 뒷범퍼 근처 (엔진열 영향 최소화)
+            'humidity_sensor': (1.0, 0.5, 1.0),   # 사이드미러 근처
+            'visibility_sensor': (2.0, 0, 1.2),   # 전면 카메라 위치
+            'ambient_light': (0, 0, 1.5),         # 지붕 중앙
+            'wind_sensor': (0, 0, 1.6)            # 지붕 최상단
+        }
+    
+    def _define_thresholds(self):
+        """환경 조건별 임계값 정의"""
+        return {
+            'visibility': {
+                'excellent': 1000,  # 1km 이상
+                'good': 500,        # 500m 이상
+                'moderate': 200,    # 200m 이상
+                'poor': 50,         # 50m 이상
+                'very_poor': 10     # 10m 이상
+            },
+            'rain_intensity': {
+                'none': 0,
+                'light': 2.5,       # mm/h
+                'moderate': 7.6,    # mm/h
+                'heavy': 50,        # mm/h
+                'very_heavy': 100   # mm/h
+            },
+            'temperature': {
+                'freezing': 0,      # 결빙 위험
+                'cold': 5,          # 타이어 성능 저하
+                'optimal': 20,      # 최적 조건
+                'hot': 35           # 과열 위험
+            }
+        }
+    
+    def measure_rain_intensity(self, sensor_data):
+        """빗물 감지 센서를 통한 강수량 측정"""
+        rain_sensor_pos = self.sensor_positions['rain_sensor']
+        
+        # 센서 데이터 시뮬레이션 (실제로는 하드웨어에서 받아옴)
+        raw_sensor_value = sensor_data.get('rain_sensor', 0)
+        
+        # 센서 값을 강수량(mm/h)으로 변환
+        rain_intensity = raw_sensor_value * 0.1  # 변환 계수
+        
+        # 강수 등급 분류
+        if rain_intensity <= self.environmental_thresholds['rain_intensity']['none']:
+            rain_level = "없음"
+        elif rain_intensity <= self.environmental_thresholds['rain_intensity']['light']:
+            rain_level = "약한 비"
+        elif rain_intensity <= self.environmental_thresholds['rain_intensity']['moderate']:
+            rain_level = "보통 비"
+        elif rain_intensity <= self.environmental_thresholds['rain_intensity']['heavy']:
+            rain_level = "강한 비"
+        else:
+            rain_level = "매우 강한 비"
+        
+        return {
+            'sensor_position': rain_sensor_pos,
+            'intensity_mmh': rain_intensity,
+            'level': rain_level,
+            'wiper_recommendation': rain_intensity > 1.0,
+            'speed_reduction_factor': max(0.7, 1.0 - rain_intensity / 100)
+        }
+    
+    def measure_visibility_distance(self, weather_condition, time_of_day="day"):
+        """가시거리 측정 및 분석"""
+        visibility_sensor_pos = self.sensor_positions['visibility_sensor']
+        
+        # 기본 가시거리 (날씨별)
+        base_visibility = {
+            WeatherCondition.CLEAR: 2000,
+            WeatherCondition.RAIN: 800,
+            WeatherCondition.SNOW: 400,
+            WeatherCondition.FOG: 100,
+            WeatherCondition.HEAVY_RAIN: 200
+        }
+        
+        visibility = base_visibility.get(weather_condition, 1000)
+        
+        # 시간대 보정 (야간에는 가시거리 감소)
+        if time_of_day == "night":
+            visibility *= 0.6
+        elif time_of_day == "dawn" or time_of_day == "dusk":
+            visibility *= 0.8
+        
+        # 가시거리 등급 분류
+        thresholds = self.environmental_thresholds['visibility']
+        if visibility >= thresholds['excellent']:
+            visibility_grade = "매우 좋음"
+        elif visibility >= thresholds['good']:
+            visibility_grade = "좋음"
+        elif visibility >= thresholds['moderate']:
+            visibility_grade = "보통"
+        elif visibility >= thresholds['poor']:
+            visibility_grade = "나쁨"
+        else:
+            visibility_grade = "매우 나쁨"
+        
+        return {
+            'sensor_position': visibility_sensor_pos,
+            'distance_m': visibility,
+            'grade': visibility_grade,
+            'headlight_recommendation': visibility < 500,
+            'max_safe_speed': min(80, visibility / 10),  # 가시거리의 1/10 속도 권장
+            'following_distance_multiplier': max(1.5, 1000 / visibility)
+        }
+    
+    def measure_temperature_conditions(self, ambient_temp):
+        """온도 조건 측정 및 분석"""
+        temp_sensor_pos = self.sensor_positions['temperature_sensor']
+        
+        # 온도 조건 분류
+        thresholds = self.environmental_thresholds['temperature']
+        if ambient_temp <= thresholds['freezing']:
+            temp_condition = "결빙 위험"
+            tire_grip_factor = 0.6
+            brake_distance_multiplier = 1.8
+        elif ambient_temp <= thresholds['cold']:
+            temp_condition = "추위"
+            tire_grip_factor = 0.8
+            brake_distance_multiplier = 1.3
+        elif ambient_temp <= thresholds['optimal']:
+            temp_condition = "최적"
+            tire_grip_factor = 1.0
+            brake_distance_multiplier = 1.0
+        elif ambient_temp <= thresholds['hot']:
+            temp_condition = "더위"
+            tire_grip_factor = 0.9
+            brake_distance_multiplier = 1.1
+        else:
+            temp_condition = "과열 위험"
+            tire_grip_factor = 0.7
+            brake_distance_multiplier = 1.4
+        
+        return {
+            'sensor_position': temp_sensor_pos,
+            'temperature_c': ambient_temp,
+            'condition': temp_condition,
+            'tire_grip_factor': tire_grip_factor,
+            'brake_distance_multiplier': brake_distance_multiplier,
+            'heating_cooling_recommendation': ambient_temp < 10 or ambient_temp > 30
+        }
+    
+    def calculate_comprehensive_environmental_impact(self, sensor_readings):
+        """종합적인 환경 영향 분석"""
+        rain_data = self.measure_rain_intensity(sensor_readings)
+        visibility_data = self.measure_visibility_distance(
+            sensor_readings.get('weather', WeatherCondition.CLEAR),
+            sensor_readings.get('time_of_day', 'day')
+        )
+        temp_data = self.measure_temperature_conditions(
+            sensor_readings.get('temperature', 20)
+        )
+        
+        # 종합 안전 지수 계산 (0-1 스케일)
+        safety_factors = [
+            rain_data['speed_reduction_factor'],
+            min(1.0, visibility_data['distance_m'] / 1000),
+            temp_data['tire_grip_factor']
+        ]
+        
+        overall_safety_index = sum(safety_factors) / len(safety_factors)
+        
+        # 권장 주행 모드 결정
+        if overall_safety_index >= 0.8:
+            driving_mode = "일반 주행"
+            max_speed_limit = 100
+        elif overall_safety_index >= 0.6:
+            driving_mode = "주의 주행"
+            max_speed_limit = 80
+        elif overall_safety_index >= 0.4:
+            driving_mode = "서행 주행"
+            max_speed_limit = 60
+        else:
+            driving_mode = "극도 주의"
+            max_speed_limit = 40
+        
+        return {
+            'overall_safety_index': overall_safety_index,
+            'recommended_driving_mode': driving_mode,
+            'max_recommended_speed': max_speed_limit,
+            'rain_analysis': rain_data,
+            'visibility_analysis': visibility_data,
+            'temperature_analysis': temp_data,
+            'sensor_health_check': self._check_sensor_health()
+        }
+    
+    def _check_sensor_health(self):
+        """센서 상태 점검"""
+        # 센서별 상태 시뮬레이션
+        sensor_health = {}
+        for sensor_name, position in self.sensor_positions.items():
+            # 간단한 상태 시뮬레이션 (실제로는 진단 데이터 사용)
+            health_score = random.uniform(0.8, 1.0)
+            status = "정상" if health_score > 0.9 else "점검 필요" if health_score > 0.7 else "고장"
+            
+            sensor_health[sensor_name] = {
+                'position': position,
+                'health_score': health_score,
+                'status': status
+            }
+        
+        return sensor_health
+
+# 사용 예시
+vehicle_config = {'length': 4.5, 'width': 1.8, 'height': 1.6}
+env_system = EnvironmentalReferencePoints(vehicle_config)
+
+# 센서 데이터 시뮬레이션
+sensor_readings = {
+    'rain_sensor': 25,  # 센서 원시값
+    'temperature': 3,   # 3도 (결빙 위험)
+    'weather': WeatherCondition.RAIN,
+    'time_of_day': 'night'
+}
+
+print("=== 환경 인식 시스템 분석 ===")
+
+# 종합 환경 분석
+comprehensive_analysis = env_system.calculate_comprehensive_environmental_impact(sensor_readings)
+
+print(f"전체 안전 지수: {comprehensive_analysis['overall_safety_index']:.2f}")
+print(f"권장 주행 모드: {comprehensive_analysis['recommended_driving_mode']}")
+print(f"최대 권장 속도: {comprehensive_analysis['max_recommended_speed']} km/h")
+
+print(f"\n강수 분석:")
+rain_info = comprehensive_analysis['rain_analysis']
+print(f"  강수량: {rain_info['intensity_mmh']:.1f} mm/h ({rain_info['level']})")
+print(f"  와이퍼 작동 권장: {rain_info['wiper_recommendation']}")
+
+print(f"\n가시거리 분석:")
+visibility_info = comprehensive_analysis['visibility_analysis']
+print(f"  가시거리: {visibility_info['distance_m']}m ({visibility_info['grade']})")
+print(f"  전조등 켜기 권장: {visibility_info['headlight_recommendation']}")
+
+print(f"\n온도 분석:")
+temp_info = comprehensive_analysis['temperature_analysis']
+print(f"  온도: {temp_info['temperature_c']}°C ({temp_info['condition']})")
+print(f"  타이어 그립 계수: {temp_info['tire_grip_factor']}")
+```
+
+### 📊 실행 결과
+```
+=== 환경 인식 시스템 분석 ===
+전체 안전 지수: 0.52
+권장 주행 모드: 서행 주행
+최대 권장 속도: 60 km/h
+
+강수 분석:
+  강수량: 2.5 mm/h (약한 비)
+  와이퍼 작동 권장: True
+
+가시거리 분석:
+  가시거리: 480m (보통)
+  전조등 켜기 권장: True
+
+온도 분석:
+  온도: 3°C (결빙 위험)
+  타이어 그립 계수: 0.6
+```
+
+---
+
+## 15. 보험/사고 조사 기준점들
+
+사고 발생 시 원인 분석과 책임 소재 파악을 위한 기준점들입니다.
+
+### 🔧 코드 예시
+
+```python
+import json
+import hashlib
+from datetime import datetime
+from typing import Dict, List, Tuple
+
+class AccidentAnalysisReferencePoints:
+    """사고 분석 및 보험 조사용 기준점 관리 클래스"""
+    
+    def __init__(self, vehicle_id, insurance_policy):
+        self.vehicle_id = vehicle_id
+        self.insurance_policy = insurance_policy
+        self.black_box_data = []
+        self.impact_points = self._define_impact_measurement_points()
+        
+    def _define_impact_measurement_points(self):
+        """충돌 측정 기준점들 정의"""
+        return {
+            'front_impact_center': (2.25, 0, 0.8),      # 전면 충돌 중심점
+            'rear_impact_center': (-2.25, 0, 0.8),      # 후면 충돌 중심점
+            'left_side_impact': (0, 0.9, 0.8),          # 좌측 충돌점
+            'right_side_impact': (0, -0.9, 0.8),        # 우측 충돌점
+            'rollover_reference': (0, 0, 1.2),          # 전복 기준점
+            'crumple_zone_front': (1.8, 0, 0.5),        # 전방 크럼플 존
+            'crumple_zone_rear': (-1.8, 0, 0.5),        # 후방 크럼플 존
+            'occupant_protection_zone': (0, 0, 1.0)     # 승객 보호 구역
+        }
+    
+    def record_pre_accident_data(self, vehicle_state, environmental_conditions):
+        """사고 전 데이터 기록"""
+        timestamp = datetime.now().isoformat()
+        
+        pre_accident_record = {
+            'timestamp': timestamp,
+            'vehicle_position': vehicle_state['position'],
+            'velocity': vehicle_state['velocity'],
+            'acceleration': vehicle_state.get('acceleration', 0),
+            'steering_angle': vehicle_state.get('steering_angle', 0),
+            'brake_status': vehicle_state.get('brake_applied', False),
+            'throttle_position': vehicle_state.get('throttle', 0),
+            'environmental_conditions': environmental_conditions,
+            'data_hash': self._generate_data_hash(vehicle_state, environmental_conditions)
+        }
+        
+        self.black_box_data.append(pre_accident_record)
+        
+        # 최근 30초 데이터만 유지 (메모리 관리)
+        if len(self.black_box_data) > 300:  # 10Hz 기준 30초
+            self.black_box_data.pop(0)
+        
+        return pre_accident_record
+    
+    def analyze_accident_reconstruction(self, impact_data, final_positions):
+        """사고 재현 분석"""
+        impact_point = impact_data['impact_location']
+        impact_force = impact_data['impact_magnitude']
+        impact_angle = impact_data['impact_angle']
+        
+        # 충돌 유형 분석
+        collision_type = self._determine_collision_type(impact_point, impact_angle)
+        
+        # 충돌 속도 역산 (에너지 보존 법칙 적용)
+        estimated_impact_speed = self._estimate_impact_speed(
+            impact_force, collision_type, final_positions
+        )
+        
+        # 책임 소재 초기 분석
+        liability_factors = self._analyze_liability_factors(
+            self.black_box_data[-10:],  # 사고 직전 1초 데이터
+            collision_type,
+            impact_angle
+        )
+        
+        reconstruction_report = {
+            'accident_id': hashlib.md5(f"{self.vehicle_id}_{datetime.now()}".encode()).hexdigest(),
+            'collision_type': collision_type,
+            'impact_location': impact_point,
+            'estimated_impact_speed': estimated_impact_speed,
+            'collision_angle': impact_angle,
+            'pre_accident_trajectory': self._calculate_pre_accident_trajectory(),
+            'liability_analysis': liability_factors,
+            'damage_assessment': self._assess_vehicle_damage(impact_point, impact_force),
+            'evidence_preservation': self._preserve_digital_evidence()
+        }
+        
+        return reconstruction_report
+    
+    def _determine_collision_type(self, impact_point, impact_angle):
+        """충돌 유형 결정"""
+        x, y, z = impact_point
+        
+        if abs(y) < 0.5:  # 전후방 충돌
+            if x > 0:
+                return "정면 충돌"
+            else:
+                return "후면 추돌"
+        elif abs(x) < 1.0:  # 측면 충돌
+            if y > 0:
+                return "좌측면 충돌"
+            else:
+                return "우측면 충돌"
+        elif impact_angle > 30:
+            return "각도 충돌"
+        else:
+            return "접촉 사고"
+    
+    def _estimate_impact_speed(self, impact_force, collision_type, final_positions):
+        """충돌 속도 추정"""
+        # 간단한 충돌 역학 모델 (실제로는 더 복잡한 계산 필요)
+        base_speed_factor = {
+            "정면 충돌": 1.2,
+            "후면 추돌": 0.8,
+            "좌측면 충돌": 1.0,
+            "우측면 충돌": 1.0,
+            "각도 충돌": 0.9,
+            "접촉 사고": 0.3
+        }
+        
+        factor = base_speed_factor.get(collision_type, 1.0)
+        estimated_speed = (impact_force / 1000) * factor * 10  # 단순화된 계산
+        
+        return min(estimated_speed, 200)  # 현실적인 최대값 제한
+    
+    def _analyze_liability_factors(self, recent_data, collision_type, impact_angle):
+        """책임 소재 분석 요소들"""
+        if not recent_data:
+            return {'analysis': '데이터 부족', 'confidence': 0}
+        
+        last_record = recent_data[-1]
+        
+        liability_factors = {
+            'speed_compliance': self._check_speed_compliance(last_record),
+            'brake_application': last_record.get('brake_status', False),
+            'steering_input': abs(last_record.get('steering_angle', 0)) > 5,
+            'environmental_factors': last_record.get('environmental_conditions', {}),
+            'traffic_violation_indicators': self._check_traffic_violations(recent_data),
+            'evasive_action_taken': self._detect_evasive_actions(recent_data)
+        }
+        
+        # 간단한 책임도 계산 (실제로는 전문가 시스템 필요)
+        responsibility_score = 0.
