@@ -6299,3 +6299,464 @@ class AccidentAnalysisReferencePoints:
         
         # 간단한 책임도 계산 (실제로는 전문가 시스템 필요)
         responsibility_score = 0.
+
+
+# 🚗 NumPy 자율주행 완벽 가이드
+
+## 📌 목차
+- [소개](#-소개)
+- [환경 설정](#-환경-설정)
+- [기본 사용법](#1-numpy-기본-사용법)
+- [인덱싱 & 슬라이싱](#2-배열-인덱싱--슬라이싱)
+- [배열 연산](#3-배열-연산)
+- [형태 변경 & 통계](#4-배열-형태-변경--통계-함수)
+- [자율주행 실전 예제](#5-자율주행-실전-예제)
+- [마무리](#-마무리)
+
+---
+
+## 🎯 소개
+
+**NumPy**는 자율주행 시스템 개발에 **필수적인 라이브러리**입니다. 
+
+### 왜 자율주행에서 NumPy가 중요한가요?
+- 📡 **센서 데이터 처리**: LiDAR, 카메라, IMU 등의 대용량 데이터
+- 🧮 **수학적 연산**: 좌표 변환, 회전 행렬, 벡터 연산
+- 🖼️ **이미지 처리**: 픽셀 데이터 조작 및 필터링
+- ⚡ **성능 최적화**: 순수 Python 대비 최대 100배 빠른 연산
+
+---
+
+## 🛠 환경 설정
+
+```bash
+# NumPy 설치
+pip install numpy
+
+# 추가 라이브러리 (시각화용)
+pip install matplotlib opencv-python
+```
+
+---
+
+## 1. NumPy 기본 사용법
+
+### 1.1 라이브러리 임포트 및 배열 생성
+
+```python
+import numpy as np
+
+# 🔧 기본 배열 생성
+# 1차원: 차량 속도 데이터
+vehicle_speed = np.array([30, 45, 60, 55, 40])  # km/h
+print(f"차량 속도: {vehicle_speed}")
+print(f"배열 형태: {vehicle_speed.shape}")  # (5,)
+
+# 2차원: 3D 포인트 클라우드 (x, y, z 좌표)
+lidar_points = np.array([
+    [1.2, 0.5, 0.1],  # 포인트 1
+    [2.3, -1.0, 0.2], # 포인트 2
+    [0.8, 2.1, 0.0]   # 포인트 3
+])
+print(f"LiDAR 포인트:\n{lidar_points}")
+print(f"포인트 개수: {lidar_points.shape[0]}, 좌표 차원: {lidar_points.shape[1]}")
+```
+
+### 1.2 특수 배열 생성
+
+```python
+# 🖼️ 빈 이미지 생성 (640x480, 흑백)
+empty_image = np.zeros((480, 640))
+print(f"빈 이미지 크기: {empty_image.shape}")
+
+# 🎯 단위 행렬 (회전 행렬 초기화용)
+identity_matrix = np.eye(3)
+print(f"3x3 단위 행렬:\n{identity_matrix}")
+
+# 📊 균등 분포 데이터 생성
+time_stamps = np.linspace(0, 10, 100)  # 0~10초, 100개 샘플
+print(f"시간 샘플: {time_stamps[:5]}...")  # 처음 5개만 출력
+```
+
+### 1.3 데이터 타입 관리
+
+```python
+# 📏 메모리 효율적인 데이터 타입 선택
+gps_coordinates = np.array([37.5665, 126.9780], dtype=np.float32)  # 위도, 경도
+sensor_readings = np.array([1, 0, 1, 1, 0], dtype=np.bool_)       # 센서 on/off
+
+print(f"GPS 좌표: {gps_coordinates} (타입: {gps_coordinates.dtype})")
+print(f"센서 상태: {sensor_readings} (타입: {sensor_readings.dtype})")
+```
+
+---
+
+## 2. 배열 인덱싱 & 슬라이싱
+
+### 2.1 기본 인덱싱
+
+```python
+# 🖼️ 카메라 이미지 시뮬레이션 (간단한 4x4 픽셀)
+camera_image = np.array([
+    [10,  20,  30,  40 ],
+    [50,  60,  70,  80 ],
+    [90,  100, 110, 120],
+    [130, 140, 150, 160]
+])
+
+print("카메라 이미지:")
+print(camera_image)
+
+# 🎯 특정 픽셀 값 접근
+print(f"좌상단 픽셀: {camera_image[0, 0]}")
+print(f"우하단 픽셀: {camera_image[3, 3]}")
+```
+
+### 2.2 슬라이싱으로 ROI 추출
+
+```python
+# 🔍 관심 영역(ROI) 추출
+# 예: 도로 표지판이 있는 중앙 영역
+roi = camera_image[1:3, 1:3]  # 2x2 중앙 영역
+print(f"관심 영역 (ROI):\n{roi}")
+
+# 📊 첫 번째 행 전체 (수평선 검출용)
+horizon_line = camera_image[0, :]
+print(f"수평선 픽셀: {horizon_line}")
+
+# 📊 마지막 열 전체 (차선 검출용)
+lane_edge = camera_image[:, -1]
+print(f"차선 가장자리: {lane_edge}")
+```
+
+### 2.3 조건부 필터링
+
+```python
+# 🔧 밝은 픽셀만 추출 (임계값 기반)
+bright_pixels = camera_image[camera_image > 80]
+print(f"밝은 픽셀 (>80): {bright_pixels}")
+
+# 🔧 특정 범위의 픽셀 (노이즈 제거)
+normal_range = camera_image[(camera_image >= 50) & (camera_image <= 120)]
+print(f"정상 범위 픽셀 (50~120): {normal_range}")
+
+# 📍 조건을 만족하는 위치 찾기
+bright_positions = np.where(camera_image > 100)
+print(f"밝은 픽셀 위치 (행, 열): {list(zip(bright_positions[0], bright_positions[1]))}")
+```
+
+---
+
+## 3. 배열 연산
+
+### 3.1 벡터 연산 (좌표 변환)
+
+```python
+# 🚗 차량 위치 데이터
+vehicle_position = np.array([10.0, 5.0, 0.0])  # x, y, z (미터)
+translation_vector = np.array([2.0, -1.0, 0.5])  # 이동량
+
+# ➕ 위치 업데이트
+new_position = vehicle_position + translation_vector
+print(f"이전 위치: {vehicle_position}")
+print(f"새 위치: {new_position}")
+
+# ✖️ 스케일링 (단위 변환: 미터 → 센티미터)
+position_cm = vehicle_position * 100
+print(f"센티미터 단위: {position_cm}")
+```
+
+### 3.2 행렬 연산 (회전 변환)
+
+```python
+# 🔄 2D 회전 행렬 (45도 회전)
+angle = np.pi / 4  # 45도를 라디안으로
+rotation_matrix = np.array([
+    [np.cos(angle), -np.sin(angle)],
+    [np.sin(angle),  np.cos(angle)]
+])
+
+# 📍 2D 포인트들
+points_2d = np.array([
+    [1, 0],    # 포인트 1
+    [0, 1],    # 포인트 2
+    [-1, 0]    # 포인트 3
+])
+
+# 🔄 포인트들 회전
+rotated_points = points_2d @ rotation_matrix
+print(f"원본 포인트:\n{points_2d}")
+print(f"회전된 포인트:\n{rotated_points}")
+```
+
+### 3.3 LiDAR 데이터 처리
+
+```python
+# 📡 LiDAR 포인트 클라우드 (거리 기반 필터링)
+lidar_distances = np.array([2.1, 15.8, 3.2, 45.6, 1.9, 25.3])  # 미터
+
+# 🔧 근거리 객체만 필터링 (20m 이내)
+nearby_objects = lidar_distances[lidar_distances < 20.0]
+print(f"근거리 객체 거리: {nearby_objects}")
+
+# 📊 거리 통계
+print(f"평균 거리: {np.mean(lidar_distances):.2f}m")
+print(f"최근접 객체: {np.min(lidar_distances):.2f}m")
+print(f"최원거리 객체: {np.max(lidar_distances):.2f}m")
+```
+
+---
+
+## 4. 배열 형태 변경 & 통계 함수
+
+### 4.1 형태 변경
+
+```python
+# 📊 센서 데이터 재구성
+sensor_readings = np.arange(1, 13)  # 1~12번 센서
+print(f"1D 센서 데이터: {sensor_readings}")
+
+# 🔧 3x4 그리드로 재배치
+sensor_grid = sensor_readings.reshape(3, 4)
+print(f"3x4 센서 그리드:\n{sensor_grid}")
+
+# 🔧 자동 차원 계산 (-1 사용)
+sensor_2col = sensor_readings.reshape(-1, 2)  # 2열, 행은 자동 계산
+print(f"2열 배치:\n{sensor_2col}")
+
+# 📏 1차원으로 평탄화
+flattened = sensor_grid.flatten()
+print(f"평탄화된 데이터: {flattened}")
+```
+
+### 4.2 브로드캐스팅
+
+```python
+# 🔧 센서 보정값 적용
+sensor_matrix = np.array([
+    [10, 20, 30],
+    [40, 50, 60],
+    [70, 80, 90]
+])
+
+# 각 열에 서로 다른 보정값 적용
+calibration_factors = np.array([0.9, 1.0, 1.1])  # 열별 보정
+calibrated_sensors = sensor_matrix * calibration_factors
+
+print(f"원본 센서값:\n{sensor_matrix}")
+print(f"보정된 센서값:\n{calibrated_sensors}")
+
+# 각 행에 오프셋 적용
+row_offsets = np.array([[5], [10], [15]])  # 행별 오프셋
+offset_sensors = sensor_matrix + row_offsets
+print(f"오프셋 적용 결과:\n{offset_sensors}")
+```
+
+### 4.3 통계 분석
+
+```python
+# 📊 주행 데이터 분석
+driving_speeds = np.array([
+    [30, 45, 60, 55],  # 1구간 속도
+    [35, 50, 65, 50],  # 2구간 속도
+    [25, 40, 55, 45]   # 3구간 속도
+])
+
+print("구간별 주행 속도:")
+print(driving_speeds)
+
+# 📈 기본 통계
+print(f"전체 평균 속도: {np.mean(driving_speeds):.1f} km/h")
+print(f"최고 속도: {np.max(driving_speeds)} km/h")
+print(f"속도 표준편차: {np.std(driving_speeds):.2f}")
+
+# 📊 축별 통계
+print(f"구간별 평균 속도: {np.mean(driving_speeds, axis=1)}")  # 각 행의 평균
+print(f"시점별 평균 속도: {np.mean(driving_speeds, axis=0)}")  # 각 열의 평균
+
+# 🔍 최고속도 위치 찾기
+max_speed_pos = np.unravel_index(np.argmax(driving_speeds), driving_speeds.shape)
+print(f"최고속도 위치: {max_speed_pos}구간 {max_speed_pos}번째")
+```
+
+---
+
+## 5. 자율주행 실전 예제
+
+### 5.1 카메라 이미지 처리
+
+```python
+# 🖼️ 간단한 차선 검출 시뮬레이션
+def detect_lane_lines(image):
+    """간단한 차선 검출 함수"""
+    # 가장자리 검출 (간단한 버전)
+    edges = np.abs(np.diff(image, axis=1))  # 수평 방향 변화량
+    
+    # 임계값을 넘는 가장자리만 추출
+    lane_threshold = np.percentile(edges, 90)  # 상위 10%
+    lane_candidates = edges > lane_threshold
+    
+    return lane_candidates
+
+# 테스트 이미지 생성
+test_image = np.random.randint(0, 256, (10, 20))  # 10x20 랜덤 이미지
+lane_detection = detect_lane_lines(test_image)
+
+print("차선 검출 결과:")
+print(lane_detection.astype(int))  # True/False를 1/0으로 표시
+```
+
+### 5.2 LiDAR 포인트 클라우드 처리
+
+```python
+# 📡 3D 포인트 클라우드 필터링
+def filter_ground_points(points, ground_height_threshold=0.2):
+    """지면 포인트 제거"""
+    # Z 좌표가 임계값보다 높은 포인트만 유지
+    return points[points[:, 2] > ground_height_threshold]
+
+def cluster_nearby_points(points, max_distance=2.0):
+    """근거리 포인트 클러스터링 (간단한 버전)"""
+    distances = np.linalg.norm(points[:, :2], axis=1)  # XY 거리만 계산
+    return points[distances < max_distance]
+
+# 샘플 LiDAR 데이터
+lidar_cloud = np.array([
+    [1.0, 2.0, 0.1],   # 지면 근처
+    [2.5, 1.5, 1.8],   # 차량 높이
+    [10.0, 5.0, 0.05], # 원거리 지면
+    [1.8, -1.2, 2.1],  # 근거리 객체
+    [0.5, 0.8, 1.5]    # 근거리 객체
+])
+
+# 필터링 단계별 적용
+print(f"원본 포인트 수: {len(lidar_cloud)}")
+
+filtered_points = filter_ground_points(lidar_cloud)
+print(f"지면 제거 후: {len(filtered_points)}")
+
+nearby_points = cluster_nearby_points(filtered_points)
+print(f"근거리 필터링 후: {len(nearby_points)}")
+print("최종 포인트들:")
+print(nearby_points)
+```
+
+### 5.3 GPS 좌표 변환
+
+```python
+# 🗺️ GPS 좌표계 변환
+def convert_gps_to_local(gps_points, origin_gps):
+    """GPS 좌표를 로컬 좌표계로 변환 (단순화된 버전)"""
+    # 위도/경도 차이를 미터로 근사 변환
+    lat_diff = (gps_points[:, 0] - origin_gps[0]) * 111000  # 위도 1도 ≈ 111km
+    lon_diff = (gps_points[:, 1] - origin_gps[1]) * 111000 * np.cos(origin_gps[0] * np.pi / 180)
+    
+    return np.column_stack([lat_diff, lon_diff])
+
+# GPS 웨이포인트
+waypoints_gps = np.array([
+    [37.5665, 126.9780],  # 서울시청
+    [37.5651, 126.9895],  # 명동
+    [37.5658, 126.9769]   # 덕수궁
+])
+
+origin = waypoints_gps[0]  # 첫 번째 지점을 원점으로
+local_coords = convert_gps_to_local(waypoints_gps, origin)
+
+print("GPS → 로컬 좌표 변환:")
+for i, (gps, local) in enumerate(zip(waypoints_gps, local_coords)):
+    print(f"지점 {i+1}: GPS{gps} → 로컬({local[0]:.1f}, {local[1]:.1f})m")
+```
+
+---
+
+## 💡 성능 최적화 팁
+
+### 벡터화 연산 사용
+```python
+# ❌ 느린 방법 (Python 반복문)
+def slow_distance_calculation(points):
+    distances = []
+    for point in points:
+        dist = (point[0]**2 + point[1]**2)**0.5
+        distances.append(dist)
+    return distances
+
+# ✅ 빠른 방법 (NumPy 벡터화)
+def fast_distance_calculation(points):
+    return np.linalg.norm(points, axis=1)
+
+# 성능 비교 예제
+sample_points = np.random.randn(1000, 2)
+%timeit slow_distance_calculation(sample_points)  # 느림
+%timeit fast_distance_calculation(sample_points)  # 빠름
+```
+
+### 메모리 효율적인 데이터 타입
+```python
+# 🔧 적절한 데이터 타입 선택으로 메모리 절약
+large_array = np.random.randint(0, 255, (1000, 1000))
+
+# 8비트 정수 사용 (이미지 픽셀값 0-255)
+image_data = large_array.astype(np.uint8)  # 메모리 1/8 절약
+
+# 32비트 부동소수점 (대부분의 계산에 충분한 정밀도)
+sensor_data = np.random.randn(1000, 3).astype(np.float32)  # 메모리 1/2 절약
+```
+
+---
+
+## 🚨 주의사항 & 디버깅 팁
+
+### 1. 배열 차원 확인
+```python
+# 차원 불일치 오류 방지
+def safe_matrix_multiply(A, B):
+    print(f"A 형태: {A.shape}, B 형태: {B.shape}")
+    if A.shape[1] != B.shape[0]:
+        raise ValueError(f"행렬 곱셈 불가: {A.shape} @ {B.shape}")
+    return A @ B
+```
+
+### 2. NaN/Inf 값 처리
+```python
+# 센서 데이터의 이상값 처리
+def clean_sensor_data(data):
+    # NaN, Inf 값 확인
+    if np.any(np.isnan(data)) or np.any(np.isinf(data)):
+        print("⚠️ 이상값 감지됨!")
+        # NaN을 0으로, Inf를 큰 값으로 대체
+        data = np.nan_to_num(data, nan=0.0, posinf=1e6, neginf=-1e6)
+    return data
+```
+
+---
+
+## 📚 추가 학습 자료
+
+### 관련 라이브러리
+- **OpenCV**: 컴퓨터 비전 (`cv2`)
+- **PCL-Python**: 포인트 클라우드 처리
+- **Matplotlib**: 데이터 시각화
+- **SciPy**: 과학 계산
+
+### 자율주행 특화 활용
+- 칼만 필터 구현
+- SLAM 알고리즘
+- 경로 계획 (Path Planning)
+- 센서 퓨전 (Sensor Fusion)
+
+---
+
+## 🎯 마무리
+
+이 가이드를 통해 NumPy를 자율주행 개발에 효과적으로 활용하는 방법을 익혔습니다. 
+
+### 다음 단계
+1. **실제 센서 데이터**로 연습해보기
+2. **OpenCV와 결합**하여 이미지 처리 심화
+3. **ROS(Robot Operating System)**와 통합
+4. **실시간 처리** 최적화 기법 학습
+
+---
+
